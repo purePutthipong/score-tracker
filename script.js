@@ -1501,7 +1501,10 @@ async function signInGoogle() {
   if (!supabaseClient) return;
   await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://pureputthipong.github.io/score-tracker/' }
+    options: { 
+      // เปลี่ยนบรรทัดนี้ เพื่อให้รันได้ทั้งตอนเทสต์ (127.0.0.1) และตอนขึ้นเว็บจริง (github.io)
+      redirectTo: window.location.origin + window.location.pathname 
+    }
   });
 }
 

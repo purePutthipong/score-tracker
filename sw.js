@@ -1,4 +1,4 @@
-const CACHE_NAME = 'score-tracker-v1';
+const CACHE_NAME = 'score-tracker-v2';
 const ASSETS = [
   '/score-tracker/',
   '/score-tracker/index.html',
