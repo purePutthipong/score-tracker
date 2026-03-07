@@ -288,10 +288,10 @@ function renderItemsMobile(cid) {
 
     // --- Line 2: score inputs ---
     var line2 = document.createElement('div');
-    line2.style.cssText = 'display:flex;align-items:center;gap:8px';
+    line2.style.cssText = 'display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden';
 
     var fromLabel = document.createElement('span');
-    fromLabel.style.cssText = 'font-size:11px;color:var(--ink3);min-width:28px';
+    fromLabel.style.cssText = 'font-size:11px;color:var(--ink3);flex-shrink:0';
     fromLabel.textContent = tr('scoreFrom');
 
     var scoreInput = document.createElement('input');
@@ -301,15 +301,15 @@ function renderItemsMobile(cid) {
     scoreInput.min = '0';
     scoreInput.value = (item.score !== undefined && item.score !== '') ? item.score : '';
     scoreInput.readOnly = locked;
-    scoreInput.style.cssText = 'flex:1;background:var(--bg);border:1px solid var(--border);' +
-      'border-radius:7px;padding:6px 10px;font-family:var(--mono);font-size:13px;' +
+    scoreInput.style.cssText = 'flex:1;min-width:0;max-width:45%;background:var(--bg);border:1px solid var(--border);' +
+      'border-radius:7px;padding:6px 8px;font-family:var(--mono);font-size:13px;' +
       'color:var(--ink);outline:none;text-align:center';
     scoreInput.addEventListener('input', (function(c2, i2) {
       return function() { updateItem(c2, i2, 'score', this.value); };
     })(cid, item.id));
 
     var toLabel = document.createElement('span');
-    toLabel.style.cssText = 'font-size:11px;color:var(--ink3)';
+    toLabel.style.cssText = 'font-size:11px;color:var(--ink3);flex-shrink:0';
     toLabel.textContent = tr('scoreTo');
 
     var maxInput = document.createElement('input');
@@ -319,8 +319,8 @@ function renderItemsMobile(cid) {
     maxInput.min = '1';
     maxInput.value = (item.maxScore !== undefined && item.maxScore !== '') ? item.maxScore : '';
     maxInput.readOnly = locked;
-    maxInput.style.cssText = 'flex:1;background:var(--bg);border:1px solid var(--border);' +
-      'border-radius:7px;padding:6px 10px;font-family:var(--mono);font-size:13px;' +
+    maxInput.style.cssText = 'flex:1;min-width:0;max-width:45%;background:var(--bg);border:1px solid var(--border);' +
+      'border-radius:7px;padding:6px 8px;font-family:var(--mono);font-size:13px;' +
       'color:var(--ink);outline:none;text-align:center';
     maxInput.addEventListener('input', (function(c2, i2) {
       return function() { updateItem(c2, i2, 'maxScore', this.value); };
@@ -395,8 +395,7 @@ function toggleTermDropdown() {
   const btn = document.getElementById('term-dropdown-btn');
   const list = document.getElementById('term-dropdown-list');
   if (!btn || !list) return;
-  const isOpen = list.classList.contains('open');
-  if (isOpen) { closeTermDropdown(); }
+  if (list.classList.contains('open')) { closeTermDropdown(); }
   else { list.classList.add('open'); btn.classList.add('open'); }
 }
 function closeTermDropdown() {
@@ -462,9 +461,8 @@ function renameTerm() {
   }
   t.name = trimmed; save(); renderAll();
   document.getElementById('brand-term-label').textContent = trimmed;
-  // Update custom dropdown label
-  const dropLabel = document.getElementById('term-dropdown-label');
-  if (dropLabel) dropLabel.textContent = trimmed;
+  const _dl = document.getElementById('term-dropdown-label');
+  if (_dl) _dl.textContent = trimmed;
 }
 
 
@@ -920,12 +918,11 @@ function renderSidebar() {
   const t = currentTerm();
   document.getElementById('brand-term-label').textContent = t?.name || '—';
 
-  // Custom term dropdown (replaces native <select>)
-  const dropLabel = document.getElementById('term-dropdown-label');
-  const dropList = document.getElementById('term-dropdown-list');
-  if (dropLabel) dropLabel.textContent = currentTerm()?.name || '—';
-  if (dropList) {
-    dropList.innerHTML = data.terms.map(t =>
+  const _dropLabel = document.getElementById('term-dropdown-label');
+  const _dropList = document.getElementById('term-dropdown-list');
+  if (_dropLabel) _dropLabel.textContent = currentTerm()?.name || '—';
+  if (_dropList) {
+    _dropList.innerHTML = data.terms.map(t =>
       `<div class="term-dropdown-item${t.id===currentTermId?' active':''}" onclick="switchTerm('${t.id}');closeTermDropdown()">${t.name}</div>`
     ).join('');
   }
@@ -1639,12 +1636,20 @@ async function loadFromCloud() {
     // 🚀 เงื่อนไขสำคัญ: ถ้าข้อมูลไม่เหมือนกัน และ (เครื่องว่าง หรือ Cloud ใหม่กว่า) ให้ดึงลงมา!
     if (cloudDataString !== localDataString && (isLocalEmpty || cloudTime > localTime)) {
       
-      // 1. บังคับบันทึกข้อมูลจาก Cloud ลงเครื่องทันที
+      // 1. บันทึกข้อมูลจาก Cloud ลงเครื่อง
       localStorage.setItem('scoretracker_v2', cloudDataString);
       localStorage.setItem('scoretracker_updated', Date.now().toString());
-      
-      // 2. 🌟 บังคับโหลดหน้าเว็บใหม่ เพื่อให้ JavaScript โหลดข้อมูลชุดนี้ขึ้นมาแสดง
-      window.location.reload();
+      // 2. โหลดข้อมูลเข้า memory แล้ว re-render ทันที ไม่ต้อง reload
+      const _parsed = JSON.parse(cloudDataString);
+      if (_parsed && _parsed.terms) {
+        data.terms = _parsed.terms;
+        const _termOk = data.terms.some(t => t.id === currentTermId);
+        if (!_termOk && data.terms.length > 0) currentTermId = data.terms[data.terms.length - 1].id;
+        currentSubjectId = null;
+        renderAll();
+        showDashboard();
+      }
+      showSyncStatus('☁️ อัปเดตข้อมูลจาก Cloud แล้ว', 'var(--green)');
       
     } else {
       showSyncStatus('☁️ ข้อมูลปัจจุบันซิงค์แล้ว', 'var(--green)');
