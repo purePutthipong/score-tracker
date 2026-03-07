@@ -1565,6 +1565,8 @@ function syncToCloud() {
 
 // Load from cloud
 // Load from cloud (อัปเดตใหม่ ป้องกันข้อมูลว่างเปล่าไปทับ Cloud)
+// Load from cloud (อัปเดตใหม่ บังคับรีเฟรชหน้าจอเมื่อดึงข้อมูลเสร็จ)
+// Load from cloud (อัปเดตใหม่ ป้องกันการรีเฟรชวนลูป และบังคับอัปเดตหน้าจอ 100%)
 async function loadFromCloud() {
   if (!currentUser || !supabaseClient) return;
   try {
@@ -1575,7 +1577,6 @@ async function loadFromCloud() {
       .eq('user_id', currentUser.id)
       .maybeSingle();
 
-    // ถ้าบน Cloud ไม่มีข้อมูล ให้ซิงค์ของในเครื่องขึ้นไป
     if (error || !rows || !rows.data) {
       syncToCloud();
       showSyncStatus('☁️ ซิงค์แล้ว (ข้อมูลใหม่)', 'var(--green)');
@@ -1584,30 +1585,25 @@ async function loadFromCloud() {
 
     const cloudTime = new Date(rows.updated_at).getTime();
     const localTime = parseInt(localStorage.getItem('scoretracker_updated') || '0');
-
-    // เช็คว่าเครื่องที่กำลังใช้อยู่ "ว่างเปล่า" หรือไม่ (ยังไม่มีวิชาเลย)
+    
     const isLocalEmpty = data.terms.length === 1 && data.terms[0].subjects.length === 0;
 
-    // 🚀 ถ้าเครื่องนี้ข้อมูลว่างเปล่า หรือ ข้อมูลบน Cloud ใหม่กว่า ให้ดึงลงมาเลย!
-    if ((isLocalEmpty || cloudTime > localTime) && rows.data && rows.data.terms) {
-      data = rows.data;
-      currentTermId = data.currentTermId || data.terms[0]?.id;
-      currentSubjectId = null;
+    // แปลงข้อมูลเป็นข้อความเพื่อเช็คว่า ข้อมูลในเครื่อง กับ บน Cloud หน้าตาเหมือนกันเป๊ะไหม
+    const localDataString = localStorage.getItem('scoretracker_v2') || '';
+    const cloudDataString = JSON.stringify(rows.data);
+
+    // 🚀 ถ้าข้อมูล "ไม่เหมือนกัน" และ (เครื่องนี้ว่างเปล่า หรือ Cloud ใหม่กว่า) -> ให้ดึงมาทับเลย
+    if (localDataString !== cloudDataString && (isLocalEmpty || cloudTime > localTime)) {
       
-      // Save locally without triggering cloud sync
-      data.currentTermId = currentTermId;
-      localStorage.setItem('scoretracker_v2', JSON.stringify(data));
+      // 1. เซฟข้อมูลใหม่จาก Cloud ลงเครื่อง
+      localStorage.setItem('scoretracker_v2', cloudDataString);
       localStorage.setItem('scoretracker_updated', Date.now().toString());
       
-      renderAll();
-      if (getSubjects().length > 0) {
-        showDashboard();
-      } else {
-        document.getElementById('empty-state').style.display = 'block';
-      }
-      showSyncStatus('☁️ โหลดจาก Cloud สำเร็จ', 'var(--green)');
+      // 2. บังคับรีเฟรชหน้าจอ 1 ครั้ง เพื่อให้กราฟและวิชาทั้งหมดอัปเดต
+      window.location.reload();
+      
     } else {
-      // แต่ถ้าข้อมูลในเครื่องเราใหม่กว่า (เพิ่งกรอกคะแนนเสร็จ) ให้อัปขึ้น Cloud
+      // ถ้าข้อมูลเหมือนกันแล้ว ก็ไม่ต้องทำอะไร แค่บอกว่าซิงค์แล้ว
       syncToCloud();
       showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
     }
@@ -1616,7 +1612,6 @@ async function loadFromCloud() {
   }
 }
 
-// UI helpers
 // UI helpers
 function showSyncStatus(msg, color) {
   // ทำให้มันอัปเดตสถานะทั้งบน PC และ มือถือ

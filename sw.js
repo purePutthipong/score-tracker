@@ -1,4 +1,4 @@
-const CACHE_NAME = 'score-tracker-v4'; // เปลี่ยนเวอร์ชันเพื่อบังคับล้างของเก่า
+const CACHE_NAME = 'score-tracker-v5'; // เปลี่ยนเวอร์ชันเพื่อบังคับล้างของเก่า
 const ASSETS = [
   '/score-tracker/',
   '/score-tracker/index.html',
