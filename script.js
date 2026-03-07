@@ -932,8 +932,8 @@ function renderCategories() {
         <div class="cat-stat"><strong style="color:var(--accent2)">${avg!==null?(avg*c.weight/100).toFixed(1):'—'}</strong>ถ่วงน้ำหนัก</div>
         <button class="btn-del-sm" onclick="removeCategory(${c.id})">×</button>
       </div>
-      <div class="items-list" id="items-${c.id}">
-        <div class="col-header-row" style="grid-template-columns:1fr 90px 90px 28px 80px 32px">
+    <div class="items-list" id="items-${c.id}">
+        <div class="col-header-row hide-mob" style="grid-template-columns:1fr 90px 90px 28px 80px 32px">
           <div class="col-hdr">ชื่องาน/สอบ</div>
           <div class="col-hdr">คะแนนที่ได้</div>
           <div class="col-hdr">คะแนนเต็ม</div>
@@ -960,7 +960,7 @@ function renderItems(cid) {
     const pctColor = pct===null?'var(--ink3)':parseFloat(pct)>=80?'var(--green)':parseFloat(pct)>=60?'var(--yellow)':'var(--red)';
     const locked = item.locked === true;
     const row = document.createElement('div');
-    row.className = 'item-row';
+    row.className = 'item-row hide-mob';
     row.style.opacity = locked ? '1' : '0.6';
     row.innerHTML = `
       <input type="text" placeholder="เช่น HW1, Midterm..." value="${item.name}" oninput="updateItem(${cid},${item.id},'name',this.value)"
@@ -1072,19 +1072,20 @@ function renderDashboard() {
     `<div class="dash-alert">⚠ <strong>${r.s.name}</strong> — คะแนนปัจจุบัน ${r.score!==null?r.score.toFixed(1):'—'} (เกรด ${r.grade.letter}) อาจไม่ผ่าน</div>`
   ).join('');
 
-  const tableRows = rows.map(r => {
+ const tableRows = rows.map(r => {
     const gc = r.grade ? GRADE_COLORS[r.grade.letter] : 'var(--ink3)';
     const pct = r.score!==null ? Math.min(r.score,100) : 0;
     const needText = r.needC===null?'—':r.needC<=0?'ผ่านแล้ว ✓':r.needC>100?'ไม่ผ่านแล้ว':r.needC.toFixed(1);
     const needColor = r.needC===null?'var(--ink3)':r.needC<=0?'var(--green)':r.needC>100?'var(--red)':r.needC>80?'var(--red)':'var(--ink2)';
-    return `<div class="dash-row" style="grid-template-columns:1fr 60px 90px 70px 50px 70px 90px" onclick="selectSubject(${r.s.id})">
+    
+    return `<div class="dash-row" onclick="selectSubject(${r.s.id})">
       <div class="dash-row-name">${r.s.name}</div>
-      <div class="dash-row-val">${r.s.credits||3}</div>
+      <div class="dash-row-val hide-mob">${r.s.credits||3}</div>
       <div class="dash-row-val">${r.score!==null?r.score.toFixed(1):'—'}</div>
-      <div><div class="dash-progress-bar"><div class="dash-progress-fill" style="width:${pct}%;background:${gc}"></div></div></div>
+      <div class="hide-mob"><div class="dash-progress-bar"><div class="dash-progress-fill" style="width:${pct}%;background:${gc}"></div></div></div>
       <div><div class="dash-grade-badge" style="color:${gc};border-color:${gc}20;background:${gc}15">${r.grade?r.grade.letter:'—'}</div></div>
-      <div class="dash-row-val">${r.grade?r.grade.gp.toFixed(1):'—'}</div>
-      <div class="dash-row-val" style="color:${needColor}">${needText}</div>
+      <div class="dash-row-val hide-mob">${r.grade?r.grade.gp.toFixed(1):'—'}</div>
+      <div class="dash-row-val hide-mob" style="color:${needColor}">${needText}</div>
     </div>`;
   }).join('');
 
@@ -1586,19 +1587,20 @@ async function loadFromCloud() {
 }
 
 // UI helpers
+// UI helpers
 function showSyncStatus(msg, color) {
-  const el = document.getElementById('sync-status');
-  if (el) { el.textContent = msg; el.style.color = color; }
+  // ทำให้มันอัปเดตสถานะทั้งบน PC และ มือถือ
+  document.querySelectorAll('#sync-status, .sync-status-text').forEach(el => {
+    el.textContent = msg; 
+    el.style.color = color;
+  });
 }
 
-
 function updateSyncUI(signedIn) {
-  const btnIn = document.getElementById('btn-signin');
-  const btnOut = document.getElementById('btn-signout');
-  const userEl = document.getElementById('sync-user');
-  if (btnIn) btnIn.style.display = signedIn ? 'none' : 'flex';
-  if (btnOut) btnOut.style.display = signedIn ? 'block' : 'none';
-  if (userEl) userEl.textContent = signedIn ? (currentUser?.email || '') : '';
+  // ทำให้ปุ่มล็อกอิน ซ่อน/แสดง พร้อมกันทั้ง 2 ที่
+  document.querySelectorAll('#btn-signin, .btn-signin-action').forEach(el => el.style.display = signedIn ? 'none' : 'flex');
+  document.querySelectorAll('#btn-signout, .btn-signout-action').forEach(el => el.style.display = signedIn ? 'block' : 'none');
+  document.querySelectorAll('#sync-user, .sync-user-text').forEach(el => el.textContent = signedIn ? (currentUser?.email || '') : '');
 }
 
 // Patch save() to also sync
