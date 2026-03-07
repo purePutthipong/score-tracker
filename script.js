@@ -9,7 +9,7 @@ window.dataLayer = window.dataLayer || [];
 var LANG = {
   th: {
     appName:'คะแนนของฉัน', addTerm:'＋ เพิ่มเทอมใหม่',
-    renameTerm:'✏️ แก้ชื่อเทอมนี้', dashboard:'📊 Dashboard รวม',
+    renameTerm:'✏️ แก้ชื่อเทอมนี้', deleteTerm:'🗑️ ลบเทอมนี้', dashboard:'📊 Dashboard รวม',
     history:'📈 ประวัติ GPA', subjects:'วิชาในเทอมนี้',
     addSubject:'+ เพิ่มวิชาใหม่', backup:'💾 Backup', importBtn:'📂 Import',
     emptyState:'กด "+ เพิ่มวิชาใหม่" เพื่อเริ่มต้น',
@@ -48,7 +48,7 @@ var LANG = {
   },
   en: {
     appName:'My Scores', addTerm:'＋ Add New Term',
-    renameTerm:'✏️ Rename This Term', dashboard:'📊 Dashboard',
+    renameTerm:'✏️ Rename This Term', deleteTerm:'🗑️ Delete This Term', dashboard:'📊 Dashboard',
     history:'📈 GPA History', subjects:'Subjects This Term',
     addSubject:'+ Add New Subject', backup:'💾 Backup', importBtn:'📂 Import',
     emptyState:'Click "+ Add New Subject" to get started',
@@ -119,6 +119,7 @@ function applyLang() {
   set('brand-name', tr('appName'));
   set('btn-addterm', tr('addTerm'));
   set('btn-renameterm', tr('renameTerm'));
+  set('btn-deleteterm', tr('deleteTerm'));
   set('dash-btn', tr('dashboard'));
   set('history-btn', tr('history'));
   set('sidebar-subjects-label', tr('subjects'));
@@ -466,6 +467,22 @@ function renameTerm() {
   if (dropLabel) dropLabel.textContent = trimmed;
 }
 
+
+function deleteTerm() {
+  const t = currentTerm();
+  if (!t) return;
+  if (data.terms.length <= 1) {
+    alert('ไม่สามารถลบได้ เพราะต้องมีอย่างน้อย 1 เทอมค่ะ');
+    return;
+  }
+  const confirmed = confirm(`ลบเทอม "${t.name}"${t.subjects.length > 0 ? ' และวิชาทั้งหมด ' + t.subjects.length + ' วิชา' : ''}?\nไม่สามารถย้อนกลับได้`);
+  if (!confirmed) return;
+  const idx = data.terms.findIndex(x => x.id === t.id);
+  data.terms.splice(idx, 1);
+  const next = data.terms[Math.min(idx, data.terms.length - 1)];
+  save();
+  switchTerm(next.id);
+}
 
 // ── Subject CRUD ───────────────────────────────────────────────────
 function addSubject() {
