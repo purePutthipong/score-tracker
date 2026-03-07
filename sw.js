@@ -1,14 +1,17 @@
-const CACHE_NAME = 'score-tracker-v5'; // เปลี่ยนเวอร์ชันเพื่อบังคับล้างของเก่า
+const CACHE_NAME = 'score-tracker-v6';
+
+// ตรวจ path อัตโนมัติ — ใช้ได้ทั้ง localhost และ GitHub Pages
+const BASE = self.location.pathname.replace(/sw\.js$/, '');
 const ASSETS = [
-  '/score-tracker/',
-  '/score-tracker/index.html',
-  '/score-tracker/style.css',
-  '/score-tracker/script.js',
-  '/score-tracker/manifest.json'
+  BASE,
+  BASE + 'index.html',
+  BASE + 'style.css',
+  BASE + 'script.js',
+  BASE + 'manifest.json'
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting(); // บังคับอัปเดตทันที
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
@@ -22,7 +25,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 🚀 เปลี่ยนเป็น Network First (โหลดของใหม่จากเน็ตก่อนเสมอ)
+// Network First — โหลดของใหม่ก่อน ถ้าไม่มีเน็ตค่อยใช้ Cache
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   if (event.request.url.startsWith('chrome-extension')) return;
@@ -30,7 +33,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // ถ้าต่อเน็ตได้และโหลดสำเร็จ ให้จำไฟล์ใหม่ลง Cache
         if (response && response.status === 200 && response.type !== 'opaque') {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
@@ -38,11 +40,10 @@ self.addEventListener('fetch', event => {
         return response;
       })
       .catch(() => {
-        // ถ้าไม่มีเน็ต (ออฟไลน์) ค่อยดึงของเก่าจาก Cache มาแสดง
         return caches.match(event.request).then(cached => {
           if (cached) return cached;
           if (event.request.mode === 'navigate') {
-            return caches.match('/score-tracker/index.html');
+            return caches.match(BASE + 'index.html');
           }
         });
       })
