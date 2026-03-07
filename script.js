@@ -1532,31 +1532,27 @@ async function signOut() {
 }
 
 // Save to cloud (debounced)
+// Save to cloud (แบบ Upsert ป้องกันข้อมูลเบิ้ล 100%)
 function syncToCloud() {
   if (!currentUser || !supabaseClient) return;
   clearTimeout(syncTimeout);
   syncTimeout = setTimeout(async () => {
     try {
-      // Check if row exists first
-      const { data: existing } = await supabaseClient
+      const { error } = await supabaseClient
         .from('user_data')
-        .select('id')
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
+        .upsert({ 
+          user_id: currentUser.id, 
+          data: data, 
+          updated_at: new Date().toISOString() 
+        }, { onConflict: 'user_id' }); // บังคับว่าถ้า user_id ซ้ำให้ Update ตัวเดิมทันที
 
-      let error;
-      if (existing) {
-        ({ error } = await supabaseClient
-          .from('user_data')
-          .update({ data: data, updated_at: new Date().toISOString() })
-          .eq('user_id', currentUser.id));
+      if (!error) {
+        showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
+        // เก็บเวลาที่ซิงค์สำเร็จล่าสุดลงเครื่องด้วย
+        localStorage.setItem('scoretracker_updated', Date.now().toString());
       } else {
-        ({ error } = await supabaseClient
-          .from('user_data')
-          .insert({ user_id: currentUser.id, data: data, updated_at: new Date().toISOString() }));
+        showSyncStatus('⚠️ ซิงค์ไม่สำเร็จ', 'var(--red)');
       }
-      if (!error) showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
-      else showSyncStatus('⚠️ ซิงค์ไม่สำเร็จ', 'var(--red)');
     } catch(e) {
       showSyncStatus('⚠️ ซิงค์ไม่สำเร็จ', 'var(--red)');
     }
