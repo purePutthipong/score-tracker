@@ -1548,36 +1548,49 @@ function syncToCloud() {
 }
 
 // Load from cloud
+// Load from cloud (อัปเดตใหม่ ป้องกันข้อมูลว่างเปล่าไปทับ Cloud)
 async function loadFromCloud() {
   if (!currentUser || !supabaseClient) return;
   try {
-    showSyncStatus('⏳ กำลังโหลด...', 'var(--ink3)');
+    showSyncStatus('⏳ กำลังตรวจสอบข้อมูล...', 'var(--ink3)');
     const { data: rows, error } = await supabaseClient
       .from('user_data')
       .select('data, updated_at')
       .eq('user_id', currentUser.id)
       .maybeSingle();
 
-    if (error || !rows) {
-      // No cloud data yet - push local data up
+    // ถ้าบน Cloud ไม่มีข้อมูล ให้ซิงค์ของในเครื่องขึ้นไป
+    if (error || !rows || !rows.data) {
       syncToCloud();
-      showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
+      showSyncStatus('☁️ ซิงค์แล้ว (ข้อมูลใหม่)', 'var(--green)');
       return;
     }
 
-    // Compare timestamps - use whichever is newer
     const cloudTime = new Date(rows.updated_at).getTime();
     const localTime = parseInt(localStorage.getItem('scoretracker_updated') || '0');
 
-    if (cloudTime > localTime && rows.data && rows.data.terms) {
+    // เช็คว่าเครื่องที่กำลังใช้อยู่ "ว่างเปล่า" หรือไม่ (ยังไม่มีวิชาเลย)
+    const isLocalEmpty = data.terms.length === 1 && data.terms[0].subjects.length === 0;
+
+    // 🚀 ถ้าเครื่องนี้ข้อมูลว่างเปล่า หรือ ข้อมูลบน Cloud ใหม่กว่า ให้ดึงลงมาเลย!
+    if ((isLocalEmpty || cloudTime > localTime) && rows.data && rows.data.terms) {
       data = rows.data;
       currentTermId = data.currentTermId || data.terms[0]?.id;
       currentSubjectId = null;
-      save();
+      
+      // เซฟลงเครื่องโดยไม่กระตุ้นให้มันดันกลับไปทับ Cloud
+      _origSave();
+      localStorage.setItem('scoretracker_updated', Date.now().toString());
+      
       renderAll();
-      showDashboard();
-      showSyncStatus('☁️ โหลดจาก Cloud แล้ว', 'var(--green)');
+      if (getSubjects().length > 0) {
+        showDashboard();
+      } else {
+        document.getElementById('empty-state').style.display = 'block';
+      }
+      showSyncStatus('☁️ โหลดจาก Cloud สำเร็จ', 'var(--green)');
     } else {
+      // แต่ถ้าข้อมูลในเครื่องเราใหม่กว่า (เพิ่งกรอกคะแนนเสร็จ) ให้อัปขึ้น Cloud
       syncToCloud();
       showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
     }
