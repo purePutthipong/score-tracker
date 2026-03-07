@@ -373,6 +373,8 @@ function nextId() {
 function save() {
   data.currentTermId = currentTermId;
   localStorage.setItem('scoretracker_v2', JSON.stringify(data));
+  localStorage.setItem('scoretracker_updated', Date.now().toString());
+  if (typeof syncToCloud === 'function') syncToCloud();
 }
 
 let _saveTimer = null;
@@ -1578,8 +1580,9 @@ async function loadFromCloud() {
       currentTermId = data.currentTermId || data.terms[0]?.id;
       currentSubjectId = null;
       
-      // เซฟลงเครื่องโดยไม่กระตุ้นให้มันดันกลับไปทับ Cloud
-      _origSave();
+      // Save locally without triggering cloud sync
+      data.currentTermId = currentTermId;
+      localStorage.setItem('scoretracker_v2', JSON.stringify(data));
       localStorage.setItem('scoretracker_updated', Date.now().toString());
       
       renderAll();
@@ -1616,13 +1619,6 @@ function updateSyncUI(signedIn) {
   document.querySelectorAll('#sync-user, .sync-user-text').forEach(el => el.textContent = signedIn ? (currentUser?.email || '') : '');
 }
 
-// Patch save() to also sync
-const _origSave = save;
-function save() {
-  _origSave();
-  localStorage.setItem('scoretracker_updated', Date.now().toString());
-  syncToCloud();
-}
 
 // Start
 initSupabase();

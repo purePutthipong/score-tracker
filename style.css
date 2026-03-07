@@ -322,25 +322,25 @@ body::after {
 }
 /* Responsive Mobile */
 @media (max-width:640px) {
-  .sidebar { display:none !important; }
-  .main { margin-left:0 !important; max-width:100vw; padding:16px; padding-bottom:84px; }
-  #bottom-nav { display:flex !important; }
-  .stats-row, .dash-stats { grid-template-columns:1fr 1fr !important; }
-  .stat-value { font-size:22px !important; }
-  .final-grid { grid-template-columns:repeat(4,1fr) !important; }
-  .topbar { flex-direction:column !important; }
-  .topbar-actions { flex-wrap:wrap !important; gap:4px !important; }
-  .btn { font-size:11px !important; padding:6px 10px !important; }
-  .category-header { display:flex !important; flex-wrap:wrap !important; gap:8px !important; padding:12px !important; }
+  .sidebar { display:none; }
+  .main { margin-left:0; max-width:100vw; padding:16px; padding-bottom:84px; }
+  #bottom-nav { display:flex; }
+  .stats-row, .dash-stats { grid-template-columns:1fr 1fr; }
+  .stat-value { font-size:22px; }
+  .final-grid { grid-template-columns:repeat(4,1fr); }
+  .topbar { flex-direction:column; }
+  .topbar-actions { flex-wrap:wrap; gap:4px; }
+  .btn { font-size:11px; padding:6px 10px; }
+  .category-header { display:flex; flex-wrap:wrap; gap:8px; padding:12px; }
   .category-header > div:first-child { flex:1; min-width:0; }
-  .weight-input { width:50px !important; }
-  .charts-grid { grid-template-columns:1fr !important; }
+  .weight-input { width:50px; }
+  .charts-grid { grid-template-columns:1fr; }
   
   /* จัดการตาราง Dashboard ให้สวยงามบนจอมือถือ */
-  .dash-table-header { display:none !important; }
-  .hide-mob { display:none !important; }
+  .dash-table-header { display:none; }
+  .hide-mob { display:none; }
   /* โชว์แค่: ชื่อวิชา | คะแนน | เกรด */
-  .dash-row { grid-template-columns: 1fr 50px 60px !important; }
+  .dash-row { grid-template-columns: 1fr 50px 60px; }
 }
 
 #btn-signout {

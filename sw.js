@@ -4,9 +4,7 @@ const ASSETS = [
   '/score-tracker/index.html',
   '/score-tracker/style.css',
   '/score-tracker/script.js',
-  '/score-tracker/manifest.json',
-  'https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Prompt:wght@300;400;600;700&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'
+  '/score-tracker/manifest.json'
 ];
 
 self.addEventListener('install', event => {
