@@ -1,4 +1,4 @@
-const CACHE_NAME = 'score-tracker-v2';
+const CACHE_NAME = 'score-tracker-v2'; // เปลี่ยนเวอร์ชันเพื่อบังคับล้างของเก่า
 const ASSETS = [
   '/score-tracker/',
   '/score-tracker/index.html',
@@ -9,50 +9,44 @@ const ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'
 ];
 
-// Install — cache all assets
 self.addEventListener('install', event => {
+  self.skipWaiting(); // บังคับอัปเดตทันที
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(err => {
-        console.warn('Some assets failed to cache:', err);
-      });
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
 });
 
-// Activate — delete old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch — cache first, fallback to network
+// 🚀 เปลี่ยนเป็น Network First (โหลดของใหม่จากเน็ตก่อนเสมอ)
 self.addEventListener('fetch', event => {
-  // Skip non-GET and chrome-extension requests
   if (event.request.method !== 'GET') return;
   if (event.request.url.startsWith('chrome-extension')) return;
 
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Cache successful responses
+    fetch(event.request)
+      .then(response => {
+        // ถ้าต่อเน็ตได้และโหลดสำเร็จ ให้จำไฟล์ใหม่ลง Cache
         if (response && response.status === 200 && response.type !== 'opaque') {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => {
-        // Offline fallback for navigation
-        if (event.request.mode === 'navigate') {
-          return caches.match('/score-tracker/index.html');
-        }
-      });
-    })
+      })
+      .catch(() => {
+        // ถ้าไม่มีเน็ต (ออฟไลน์) ค่อยดึงของเก่าจาก Cache มาแสดง
+        return caches.match(event.request).then(cached => {
+          if (cached) return cached;
+          if (event.request.mode === 'navigate') {
+            return caches.match('/score-tracker/index.html');
+          }
+        });
+      })
   );
 });
