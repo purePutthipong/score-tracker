@@ -32,7 +32,13 @@
             </div>
 
             <div class="sidebar-nav">
-                <select class="term-select" id="term-select" onchange="switchTerm(this.value)"></select>
+                <div class="term-dropdown" id="term-dropdown-wrap">
+                  <button class="term-dropdown-btn" id="term-dropdown-btn" onclick="toggleTermDropdown()">
+                    <span id="term-dropdown-label">—</span>
+                    <span class="term-dropdown-arrow">▾</span>
+                  </button>
+                  <div class="term-dropdown-list" id="term-dropdown-list"></div>
+                </div>
                 <button class="nav-btn" id="btn-addterm" onclick="addTerm()">＋ เพิ่มเทอมใหม่</button>
                 <button class="nav-btn" id="btn-renameterm" onclick="renameTerm()">✏️ แก้ชื่อเทอมนี้</button>
                 <button class="nav-btn" id="dash-btn" onclick="showDashboard()">📊 Dashboard</button>

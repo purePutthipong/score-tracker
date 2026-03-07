@@ -9,7 +9,7 @@ window.dataLayer = window.dataLayer || [];
 var LANG = {
   th: {
     appName:'คะแนนของฉัน', addTerm:'＋ เพิ่มเทอมใหม่',
-    renameTerm:'✏️ แก้ชื่อเทอมนี้', dashboard:'📊 Dashboard รวม',
+    renameTerm:'✏️ แก้ชื่อเทอมนี้', deleteTerm:'🗑️ ลบเทอมนี้', dashboard:'📊 Dashboard รวม',
     history:'📈 ประวัติ GPA', subjects:'วิชาในเทอมนี้',
     addSubject:'+ เพิ่มวิชาใหม่', backup:'💾 Backup', importBtn:'📂 Import',
     emptyState:'กด "+ เพิ่มวิชาใหม่" เพื่อเริ่มต้น',
@@ -48,7 +48,7 @@ var LANG = {
   },
   en: {
     appName:'My Scores', addTerm:'＋ Add New Term',
-    renameTerm:'✏️ Rename This Term', dashboard:'📊 Dashboard',
+    renameTerm:'✏️ Rename This Term', deleteTerm:'🗑️ Delete This Term', dashboard:'📊 Dashboard',
     history:'📈 GPA History', subjects:'Subjects This Term',
     addSubject:'+ Add New Subject', backup:'💾 Backup', importBtn:'📂 Import',
     emptyState:'Click "+ Add New Subject" to get started',
@@ -119,6 +119,7 @@ function applyLang() {
   set('brand-name', tr('appName'));
   set('btn-addterm', tr('addTerm'));
   set('btn-renameterm', tr('renameTerm'));
+  set('btn-deleteterm', tr('deleteTerm'));
   set('dash-btn', tr('dashboard'));
   set('history-btn', tr('history'));
   set('sidebar-subjects-label', tr('subjects'));
@@ -389,6 +390,26 @@ function getSubject() { return getSubjects().find(s => s.id === parseInt(current
 
 // ... (ข้ามฟังก์ชัน getGrades, addTerm, renameTerm ไป) ...
 
+
+function toggleTermDropdown() {
+  const btn = document.getElementById('term-dropdown-btn');
+  const list = document.getElementById('term-dropdown-list');
+  if (!btn || !list) return;
+  const isOpen = list.classList.contains('open');
+  if (isOpen) {
+    list.classList.remove('open');
+    btn.classList.remove('open');
+  } else {
+    list.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+function closeTermDropdown() {
+  const btn = document.getElementById('term-dropdown-btn');
+  const list = document.getElementById('term-dropdown-list');
+  if (btn) btn.classList.remove('open');
+  if (list) list.classList.remove('open');
+}
 function switchTerm(id) {
   const newId = parseInt(id);
   if (isNaN(newId)) return;
@@ -450,6 +471,23 @@ function renameTerm() {
   if (opt) opt.textContent = trimmed;
 }
 
+function deleteTerm() {
+  const t = currentTerm();
+  if (!t) return;
+  if (data.terms.length <= 1) {
+    alert('ไม่สามารถลบได้ เพราะต้องมีอย่างน้อย 1 เทอมค่ะ');
+    return;
+  }
+  const confirmed = confirm(`ลบเทอม "${t.name}" และวิชาทั้งหมดใน${t.subjects.length > 0 ? t.subjects.length + ' วิชา' : 'เทอมนี้'}?
+ไม่สามารถย้อนกลับได้`);
+  if (!confirmed) return;
+  const idx = data.terms.findIndex(x => x.id === t.id);
+  data.terms.splice(idx, 1);
+  // Switch to nearest term
+  const next = data.terms[Math.min(idx, data.terms.length - 1)];
+  save();
+  switchTerm(next.id);
+}
 
 // ── Subject CRUD ───────────────────────────────────────────────────
 function addSubject() {
@@ -887,8 +925,16 @@ function renderSidebar() {
   const t = currentTerm();
   document.getElementById('brand-term-label').textContent = t?.name || '—';
 
-  const sel = document.getElementById('term-select');
-  sel.innerHTML = data.terms.map(t => `<option value="${t.id}" ${t.id===currentTermId?'selected':''}>${t.name}</option>`).join('');
+  // Custom term dropdown
+  const dropBtn = document.getElementById('term-dropdown-btn');
+  const dropList = document.getElementById('term-dropdown-list');
+  const dropLabel = document.getElementById('term-dropdown-label');
+  if (dropLabel) dropLabel.textContent = currentTerm()?.name || '—';
+  if (dropList) {
+    dropList.innerHTML = data.terms.map(t =>
+      `<div class="term-dropdown-item${t.id===currentTermId?' active':''}" onclick="switchTerm('${t.id}');closeTermDropdown()">${t.name}</div>`
+    ).join('');
+  }
 
   const list = document.getElementById('subject-list');
   list.innerHTML = '';
