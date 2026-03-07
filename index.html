@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Score Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-tag">Academic</div>
+                <div class="brand-name" id="brand-name">คะแนนของฉัน</div>
+                <div class="brand-term" id="brand-term-label">เทอม 1/2568</div>
+            </div>
+
+            <div class="sidebar-nav">
+                <select class="term-select" id="term-select" onchange="switchTerm(this.value)"></select>
+                <button class="nav-btn" id="btn-addterm" onclick="addTerm()">＋ เพิ่มเทอมใหม่</button>
+                <button class="nav-btn" id="btn-renameterm" onclick="renameTerm()">✏️ แก้ชื่อเทอมนี้</button>
+                <button class="nav-btn" id="dash-btn" onclick="showDashboard()">📊 Dashboard</button>
+                <button class="nav-btn" id="history-btn" onclick="showHistory()">📈 ประวัติ GPA</button>
+            </div>
+
+            <div class="sidebar-section" id="sidebar-subjects-label">วิชาในเทอมนี้</div>
+            <div class="subject-list" id="subject-list"></div>
+
+            <div class="sidebar-footer">
+                <button class="btn-new-subject" id="btn-newsubject" onclick="addSubject()">+ เพิ่มวิชาใหม่</button>
+                <div style="display: flex; gap: 4px; margin-top: 10px;">
+                    <button class="btn-outline" style="flex: 1; font-size: 10px;" id="btn-backup" onclick="exportJSON()">💾 Backup</button>
+                    <button class="btn-outline" style="flex: 1; font-size: 10px;" id="btn-import" onclick="document.getElementById('import-file').click()">📂 Import</button>
+                    <input type="file" id="import-file" style="display:none" onchange="importJSON(event)" accept=".json">
+                <div style="display:flex;gap:4px;margin-top:8px">
+                    <button id="lang-th" onclick="switchLang('th')" style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;font-family:var(--body)">🇹🇭 ไทย</button>
+                    <button id="lang-en" onclick="switchLang('en')" style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;font-family:var(--body)">🌐 EN</button>
+                </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div id="empty-state" style="display:none; text-align:center; padding-top:100px;">
+                <h2 id="empty-text">กด "+ เพิ่มวิชาใหม่" เพื่อเริ่มต้น</h2>
+            </div>
+
+            <div id="subject-view" style="display:none;">
+                <div class="topbar">
+                    <div class="subject-title-wrap">
+                        <div class="subject-title">
+                            <input type="text" id="subject-name-input" oninput="renameSubject(this.value)">
+                            <div class="grade-pill" id="grade-pill">—</div>
+                        </div>
+                        <div class="score-detail" id="score-detail-line"></div>
+                    </div>
+                    <div class="topbar-actions">
+                        <button class="btn btn-outline" id="quick-mode-btn" onclick="toggleQuickMode()">📋 โหมดเทอมเก่า</button>
+                        <button class="btn btn-outline" onclick="openBoundaryModal()">⚙️ เกรด</button>
+                        <button class="btn btn-danger" onclick="deleteSubject()">ลบวิชา</button>
+                        <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card s1">
+                        <div class="stat-label" id="lbl-raw">คะแนนสะสม</div>
+                        <div class="stat-value" id="stat-raw">—</div>
+                        <div class="stat-sub" id="stat-raw-sub"></div>
+                    </div>
+                    <div class="stat-card s2">
+                        <div class="stat-label" id="lbl-weighted">คะแนนถ่วงน้ำหนัก</div>
+                        <div class="stat-value" id="stat-weighted">—</div>
+                        <div class="stat-sub" id="stat-weighted-sub"></div>
+                    </div>
+                    <div class="stat-card s3">
+                        <div class="stat-label" id="lbl-need">Final ที่ต้องได้ (C)</div>
+                        <div class="stat-value" id="stat-need">—</div>
+                        <div class="stat-sub" id="stat-need-sub"></div>
+                    </div>
+                    <div class="stat-card s4">
+                        <div class="stat-label" id="lbl-grade">เกรดตอนนี้</div>
+                        <div class="stat-value" id="stat-grade">—</div>
+                        <div class="stat-sub" id="stat-grade-sub"></div>
+                    </div>
+                </div>
+
+                <div class="section-box">
+                    <div class="section-label" id="lbl-boundary">Grade Boundary — คุณอยู่ตรงไหน</div>
+                    <div class="boundary-bar" id="boundary-bar">
+                        <div class="boundary-marker" id="boundary-marker"></div>
+                    </div>
+                    <div class="boundary-labels" id="boundary-labels"></div>
+                </div>
+
+                <div class="section-box">
+                    <div class="final-header">
+                        <div class="section-label" id="lbl-final" style="margin-bottom:0">ต้องสอบ Final ได้เท่าไหร่</div>
+                        <div style="display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px">
+                            <span>Final Weight:</span>
+                            <input type="number" id="final-weight-input" class="weight-input" oninput="calculate()">
+                            <span>%</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; margin-left:12px">
+                            <span>Credits:</span>
+                            <input type="number" id="credits-input" class="weight-input" oninput="updateCredits(this.value)">
+                        </div>
+                    </div>
+                    <div class="final-grid" id="final-grid"></div>
+                    <div id="final-summary" style="margin-top:12px; font-size:11px; color:var(--ink3); font-family:var(--mono); text-align:center"></div>
+                </div>
+
+                <div id="quick-mode-panel" class="section-box anim" style="display:none; text-align:center;">
+                    <div class="section-label">บันทึกเกรดโดยตรง (Quick Mode)</div>
+                    <div class="quick-grade-buttons" id="quick-grade-buttons" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap"></div>
+                </div>
+
+                <div id="categories-container" class="categories"></div>
+                
+                <button class="btn-add-category" onclick="addCategory()">+ เพิ่มหมวดคะแนน</button>
+
+                <div class="section-box" style="margin-top:20px">
+                    <div class="section-label" id="lbl-note">โน้ต / หมายเหตุ</div>
+                    <textarea class="note-area" id="subject-note" placeholder="จดอะไรก็ได้..." oninput="saveNote(this.value)"></textarea>
+                </div>
+
+                <div class="weight-warn" id="weight-warn"></div>
+            </div>
+
+            <div id="dashboard-view" style="display:none;"></div>
+
+            <div id="history-view" style="display:none;"></div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="boundary-modal">
+        <div class="modal">
+            <div class="modal-title" id="modal-title">⚙ กำหนด Grade Boundary</div>
+            <div class="modal-sub" id="modal-sub">กำหนดเกณฑ์คะแนนขั้นต่ำของแต่ละเกรดสำหรับวิชานี้</div>
+            <div class="modal-grid" id="boundary-form"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="btn-reset" onclick="resetBoundary()">รีเซ็ต</button>
+                <button class="btn btn-outline" id="btn-cancel" onclick="closeBoundaryModal()">ยกเลิก</button>
+                <button class="btn btn-primary" id="btn-save" onclick="saveBoundary()">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- Mobile Bottom Nav -->
+    <div id="bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--sidebar-bg);border-top:1px solid rgba(255,255,255,0.1);padding:8px 0 14px;justify-content:space-around;align-items:center;">
+        <button onclick="showDashboard();closeAllSheets()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:8px">
+            <span style="font-size:22px">📊</span><span id="bnav-dash-label">Dashboard</span>
+        </button>
+        <button onclick="showHistory();closeAllSheets()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:8px">
+            <span style="font-size:22px">📈</span><span id="bnav-gpa-label">GPA</span>
+        </button>
+        <button onclick="toggleSubjectSheet()" style="background:var(--accent);border:none;color:white;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 18px;border-radius:14px">
+            <span style="font-size:22px">📚</span><span id="bnav-subjects-label">วิชา</span>
+        </button>
+        <button onclick="toggleSettingsSheet()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:8px">
+            <span style="font-size:22px">⚙️</span><span id="bnav-settings-label">Settings</span>
+        </button>
+    </div>
+
+    <!-- Mobile Subject Sheet -->
+    <div id="subject-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sidebar-bg);border-radius:20px 20px 0 0;padding:16px;max-height:72vh;overflow-y:auto;">
+        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:99px;margin:0 auto 16px"></div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:12px" id="sheet-subjects-label">วิชาในเทอมนี้</div>
+        <div id="subject-sheet-list"></div>
+        <button onclick="addSubject();closeAllSheets()" id="sheet-add-label" style="width:100%;padding:12px;background:rgba(212,82,26,0.12);border:1px dashed rgba(212,82,26,0.4);border-radius:10px;color:var(--accent);font-family:var(--body);font-size:13px;cursor:pointer;margin-top:6px">＋ เพิ่มวิชาใหม่</button>
+    </div>
+
+    <!-- Mobile Settings Sheet -->
+    <div id="settings-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sidebar-bg);border-radius:20px 20px 0 0;padding:16px;max-height:72vh;overflow-y:auto;">
+        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:99px;margin:0 auto 16px"></div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:14px">⚙ Settings</div>
+        <div style="margin-bottom:10px">
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-family:var(--mono)" id="settings-term-label">เทอม</div>
+            <select id="settings-term-select" onchange="switchTerm(this.value);closeAllSheets()" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:white;font-family:var(--body);font-size:13px;padding:8px 12px;outline:none;cursor:pointer"></select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button onclick="addTerm();closeAllSheets()" id="settings-addterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">＋ เพิ่มเทอม</button>
+            <button onclick="renameTerm()" id="settings-renameterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">✏️ แก้ชื่อเทอม</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button onclick="toggleTheme()" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">🌙 Dark / Light</button>
+            <button onclick="exportJSON();closeAllSheets()" id="settings-backup-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">💾 Backup</button>
+        </div>
+        <div style="display:flex;gap:8px">
+            <button id="slang-th" onclick="switchLang('th')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🇹🇭 ไทย</button>
+            <button id="slang-en" onclick="switchLang('en')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🌐 EN</button>
+        </div>
+    </div>
+    <div id="sheet-overlay" onclick="closeAllSheets()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:140"></div>
+
+</body>
+</html>
