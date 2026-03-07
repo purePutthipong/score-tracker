@@ -1530,11 +1530,11 @@ async function signOut() {
   if (!supabaseClient) return;
   await supabaseClient.auth.signOut();
 
-  // ล้างข้อมูลในเครื่องทิ้งเพื่อความเป็นส่วนตัว
-  localStorage.removeItem('scoretracker_v2'); 
-  localStorage.removeItem('scoretracker_updated');
-
-  // รีเฟรชหน้าจอเพื่อกลับไปสู่สถานะเริ่มต้น
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('scoretracker')) {
+      localStorage.removeItem(key);
+    }
+  });
   window.location.reload(); 
 }
 
