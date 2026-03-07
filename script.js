@@ -1452,3 +1452,159 @@ if (getSubjects().length > 0) {
 } else {
   document.getElementById('empty-state').style.display = 'block';
 }
+
+// ══════════════════════════════════════════════════════════════════
+// CLOUD SYNC — Supabase
+// ══════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://axbviopnyuhievypqerq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_f5SUg0uW_IieQNAxnwEF_Q_9IW7o69p';
+
+let supabaseClient = null;
+let currentUser = null;
+let syncTimeout = null;
+
+// Init Supabase
+async function initSupabase() {
+  if (typeof window.supabase === 'undefined') return;
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Check existing session
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    onSignedIn();
+  }
+
+  // Listen for auth changes
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN') {
+      currentUser = session.user;
+      onSignedIn();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      onSignedOut();
+    }
+  });
+}
+
+async function onSignedIn() {
+  updateSyncUI(true);
+  await loadFromCloud();
+}
+
+function onSignedOut() {
+  updateSyncUI(false);
+}
+
+// Sign in with Google
+async function signInGoogle() {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://pureputthipong.github.io/score-tracker/' }
+  });
+}
+
+// Sign out
+async function signOut() {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+}
+
+// Save to cloud (debounced)
+function syncToCloud() {
+  if (!currentUser || !supabaseClient) return;
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(async () => {
+    try {
+      // Check if row exists first
+      const { data: existing } = await supabaseClient
+        .from('user_data')
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      let error;
+      if (existing) {
+        ({ error } = await supabaseClient
+          .from('user_data')
+          .update({ data: data, updated_at: new Date().toISOString() })
+          .eq('user_id', currentUser.id));
+      } else {
+        ({ error } = await supabaseClient
+          .from('user_data')
+          .insert({ user_id: currentUser.id, data: data, updated_at: new Date().toISOString() }));
+      }
+      if (!error) showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
+      else showSyncStatus('⚠️ ซิงค์ไม่สำเร็จ', 'var(--red)');
+    } catch(e) {
+      showSyncStatus('⚠️ ซิงค์ไม่สำเร็จ', 'var(--red)');
+    }
+  }, 1500);
+}
+
+// Load from cloud
+async function loadFromCloud() {
+  if (!currentUser || !supabaseClient) return;
+  try {
+    showSyncStatus('⏳ กำลังโหลด...', 'var(--ink3)');
+    const { data: rows, error } = await supabaseClient
+      .from('user_data')
+      .select('data, updated_at')
+      .eq('user_id', currentUser.id)
+      .maybeSingle();
+
+    if (error || !rows) {
+      // No cloud data yet - push local data up
+      syncToCloud();
+      showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
+      return;
+    }
+
+    // Compare timestamps - use whichever is newer
+    const cloudTime = new Date(rows.updated_at).getTime();
+    const localTime = parseInt(localStorage.getItem('scoretracker_updated') || '0');
+
+    if (cloudTime > localTime && rows.data && rows.data.terms) {
+      data = rows.data;
+      currentTermId = data.currentTermId || data.terms[0]?.id;
+      currentSubjectId = null;
+      save();
+      renderAll();
+      showDashboard();
+      showSyncStatus('☁️ โหลดจาก Cloud แล้ว', 'var(--green)');
+    } else {
+      syncToCloud();
+      showSyncStatus('☁️ ซิงค์แล้ว', 'var(--green)');
+    }
+  } catch(e) {
+    showSyncStatus('⚠️ โหลดไม่สำเร็จ', 'var(--red)');
+  }
+}
+
+// UI helpers
+function showSyncStatus(msg, color) {
+  const el = document.getElementById('sync-status');
+  if (el) { el.textContent = msg; el.style.color = color; }
+}
+
+
+function updateSyncUI(signedIn) {
+  const btnIn = document.getElementById('btn-signin');
+  const btnOut = document.getElementById('btn-signout');
+  const userEl = document.getElementById('sync-user');
+  if (btnIn) btnIn.style.display = signedIn ? 'none' : 'flex';
+  if (btnOut) btnOut.style.display = signedIn ? 'block' : 'none';
+  if (userEl) userEl.textContent = signedIn ? (currentUser?.email || '') : '';
+}
+
+// Patch save() to also sync
+const _origSave = save;
+function save() {
+  _origSave();
+  localStorage.setItem('scoretracker_updated', Date.now().toString());
+  syncToCloud();
+}
+
+// Start
+initSupabase();

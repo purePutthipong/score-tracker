@@ -56,7 +56,7 @@ body::after {
 
 /* ── Sidebar ── */
 .sidebar {
-  width:260px;
+  width:280px;
   background:var(--sidebar-bg);
   color:var(--sidebar-text);
   display:flex;
@@ -98,7 +98,7 @@ body::after {
 }
 .nav-btn:hover,.nav-btn.active { background:rgba(212,82,26,0.2);border-color:var(--accent);color:white; }
 
-.subject-list { flex:1;padding:0 12px; }
+.subject-list { flex:1;padding:0 12px;overflow-y:auto;max-height:calc(100vh - 480px); }
 .subject-item {
   padding:9px 11px;border-radius:8px;cursor:pointer;
   margin-bottom:2px;transition:all 0.15s;
@@ -110,7 +110,16 @@ body::after {
 .subject-item-grade { font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.1);flex-shrink:0; }
 .subject-item.active .subject-item-grade { background:rgba(255,255,255,0.25); }
 
-.sidebar-footer { padding:12px; border-top:1px solid rgba(255,255,255,0.07); }
+.sidebar-footer { 
+  padding:16px 12px;
+  border-top:1px solid rgba(255,255,255,0.07);
+  background:var(--sidebar-bg);
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-height:180px;
+}
 .btn-new-subject {
   width:100%;padding:9px;
   background:rgba(255,255,255,0.05);
@@ -138,7 +147,7 @@ body::after {
 .term-select option { background:#1a1714; }
 
 /* ── Main ── */
-.main { margin-left:260px;flex:1;padding:28px 28px 40px;max-width:calc(100vw - 260px); }
+.main { margin-left:280px;flex:1;padding:28px 28px 40px;max-width:calc(100vw - 260px); }
 
 /* ── Topbar ── */
 .topbar { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap; }
@@ -333,4 +342,18 @@ body::after {
   .dash-stats { grid-template-columns:1fr 1fr !important; }
   .dash-table-header { display:none !important; }
   .dash-row { grid-template-columns:1fr auto auto !important; }
+}
+
+#btn-signout {
+  width:100%;
+  margin-top:4px;
+  background:rgba(192,57,43,0.1) !important;
+  border:1px solid rgba(192,57,43,0.2) !important;
+  color:#ff6b6b !important;
+}
+#sync-user {
+  font-size:10px;
+  color:rgba(255,255,255,0.4);
+  margin-bottom:2px;
+  text-align:center;
 }
