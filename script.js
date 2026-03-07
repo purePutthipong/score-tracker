@@ -149,7 +149,7 @@ function applyLang() {
   set('settings-renameterm-label', tr('settingsRenameTerm'));
   set('settings-backup-label', tr('settingsBackup'));
   setPH('note-textarea', tr('notePlaceholder'));
-  setPH('subject-name-input', tr('subjectPlaceholder'));
+  setPH('subject-note', tr('notePlaceholder'));
   // Lang button highlights (sidebar)
   ['th','en'].forEach(function(l) {
     var b = document.getElementById('lang-' + l);
@@ -1529,6 +1529,13 @@ async function signInGoogle() {
 async function signOut() {
   if (!supabaseClient) return;
   await supabaseClient.auth.signOut();
+
+  // ล้างข้อมูลในเครื่องทิ้งเพื่อความเป็นส่วนตัว
+  localStorage.removeItem('scoretracker_v2'); 
+  localStorage.removeItem('scoretracker_updated');
+
+  // รีเฟรชหน้าจอเพื่อกลับไปสู่สถานะเริ่มต้น
+  window.location.reload(); 
 }
 
 // Save to cloud (debounced)
