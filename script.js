@@ -148,7 +148,6 @@ function applyLang() {
   set('settings-addterm-label', tr('settingsAddTerm'));
   set('settings-renameterm-label', tr('settingsRenameTerm'));
   set('settings-backup-label', tr('settingsBackup'));
-  setPH('note-textarea', tr('notePlaceholder'));
   setPH('subject-note', tr('notePlaceholder'));
   // Lang button highlights (sidebar)
   ['th','en'].forEach(function(l) {
