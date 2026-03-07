@@ -6,7 +6,6 @@
     <title>Score Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d4521a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,7 +14,6 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="style.css">
-<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SC94SRRF5S"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -180,7 +178,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
-    <!-- Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
@@ -191,8 +188,6 @@
       }
     </script>
 
-
-    <!-- Mobile Bottom Nav -->
     <div id="bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--sidebar-bg);border-top:1px solid rgba(255,255,255,0.1);padding:8px 0 14px;justify-content:space-around;align-items:center;">
         <button onclick="showDashboard();closeAllSheets()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:8px">
             <span style="font-size:22px">📊</span><span id="bnav-dash-label">Dashboard</span>
@@ -208,7 +203,6 @@
         </button>
     </div>
 
-    <!-- Mobile Subject Sheet -->
     <div id="subject-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sidebar-bg);border-radius:20px 20px 0 0;padding:16px;max-height:72vh;overflow-y:auto;">
         <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:99px;margin:0 auto 16px"></div>
         <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:12px" id="sheet-subjects-label">วิชาในเทอมนี้</div>
@@ -216,15 +210,32 @@
         <button onclick="addSubject();closeAllSheets()" id="sheet-add-label" style="width:100%;padding:12px;background:rgba(212,82,26,0.12);border:1px dashed rgba(212,82,26,0.4);border-radius:10px;color:var(--accent);font-family:var(--body);font-size:13px;cursor:pointer;margin-top:6px">＋ เพิ่มวิชาใหม่</button>
     </div>
 
-    <!-- Mobile Settings Sheet -->
     <div id="settings-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sidebar-bg);border-radius:20px 20px 0 0;padding:16px;max-height:72vh;overflow-y:auto;">
         
-        <div style="display:flex;gap:8px">
+        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:99px;margin:0 auto 16px"></div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:14px">⚙ Settings</div>
+        
+        <div style="margin-bottom:10px">
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-family:var(--mono)" id="settings-term-label">เทอม</div>
+            <select id="settings-term-select" onchange="switchTerm(this.value);closeAllSheets()" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:white;font-family:var(--body);font-size:13px;padding:8px 12px;outline:none;cursor:pointer"></select>
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button onclick="addTerm();closeAllSheets()" id="settings-addterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">＋ เพิ่มเทอม</button>
+            <button onclick="renameTerm()" id="settings-renameterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">✏️ แก้ชื่อเทอม</button>
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button onclick="toggleTheme()" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">🌙 Dark / Light</button>
+            <button onclick="exportJSON();closeAllSheets()" id="settings-backup-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">💾 Backup</button>
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-bottom:16px">
             <button id="slang-th" onclick="switchLang('th')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🇹🇭 ไทย</button>
             <button id="slang-en" onclick="switchLang('en')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🌐 EN</button>
         </div>
 
-        <div style="padding-top:16px;margin-top:16px;border-top:1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div class="sync-status-text" style="font-size:11px;color:var(--ink3);font-family:var(--mono)"></div>
                 <button class="btn-signout-action" onclick="signOut()" style="padding:4px 12px;background:rgba(192, 57, 43, 0.1);border:1px solid rgba(192, 57, 43, 0.2);border-radius:6px;color:#ff6b6b;font-family:var(--body);font-size:11px;cursor:pointer;display:none;width:auto;margin-top:0">ออกจากระบบ</button>
@@ -236,28 +247,7 @@
             </button>
         </div>
     </div>
-        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:99px;margin:0 auto 16px"></div>
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:14px">⚙ Settings</div>
-        <div style="margin-bottom:10px">
-            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-family:var(--mono)" id="settings-term-label">เทอม</div>
-            <select id="settings-term-select" onchange="switchTerm(this.value);closeAllSheets()" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:white;font-family:var(--body);font-size:13px;padding:8px 12px;outline:none;cursor:pointer"></select>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-            <button onclick="addTerm();closeAllSheets()" id="settings-addterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">＋ เพิ่มเทอม</button>
-            <button onclick="renameTerm()" id="settings-renameterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">✏️ แก้ชื่อเทอม</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-            <button onclick="toggleTheme()" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">🌙 Dark / Light</button>
-            <button onclick="exportJSON();closeAllSheets()" id="settings-backup-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">💾 Backup</button>
-        </div>
-        <div style="display:flex;gap:8px">
-            <button id="slang-th" onclick="switchLang('th')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🇹🇭 ไทย</button>
-            <button id="slang-en" onclick="switchLang('en')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🌐 EN</button>
-        </div>
-    </div>
     <div id="sheet-overlay" onclick="closeAllSheets()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:140"></div>
-
-
 
 </body>
 </html>
