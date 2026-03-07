@@ -383,9 +383,34 @@ function debounceSave() {
   _saveTimer = setTimeout(() => save(), 1000);
 }
 
-function currentTerm() { return data.terms.find(t => t.id === currentTermId); }
+// บังคับให้หาเทอมด้วยตัวเลขเสมอ ป้องกันบั๊กข้อมูลไม่ตรงกัน
+function currentTerm() { return data.terms.find(t => t.id === parseInt(currentTermId)); }
 function getSubjects() { return currentTerm()?.subjects || []; }
-function getSubject() { return getSubjects().find(s => s.id === currentSubjectId); }
+function getSubject() { return getSubjects().find(s => s.id === parseInt(currentSubjectId)); }
+
+// ... (ข้ามฟังก์ชัน getGrades, addTerm, renameTerm ไป) ...
+
+function switchTerm(id) {
+  const newId = parseInt(id);
+  if (isNaN(newId)) return;
+  
+  currentTermId = newId;
+  currentSubjectId = null;
+  save(); 
+  
+  // เคลียร์หน้าจอวิชาเดิมทิ้ง ป้องกันข้อมูลค้าง
+  document.getElementById('subject-view').style.display = 'none';
+  document.getElementById('subject-name-input').value = '';
+  document.getElementById('categories-container').innerHTML = '';
+  
+  // บังคับวาด Sidebar และ Dashboard ใหม่ทั้งหมด
+  renderAll();
+  showDashboard();
+  
+  // อัปเดต Dropdown ในหน้าจอมือถือให้ตรงกัน
+  const mobSel = document.getElementById('settings-term-select');
+  if(mobSel) mobSel.value = currentTermId;
+}
 
 function getGrades(s) {
   const b = s.boundary || DEFAULT_BOUNDARY;
@@ -426,17 +451,6 @@ function renameTerm() {
   if (opt) opt.textContent = trimmed;
 }
 
-function switchTerm(id) {
-  currentTermId = parseInt(id);
-  currentSubjectId = null;
-  save();
-  // Force clear subject view so it doesn't show stale data
-  document.getElementById('subject-view').style.display = 'none';
-  document.getElementById('subject-name-input').value = '';
-  document.getElementById('categories-container').innerHTML = '';
-  renderAll();
-  showDashboard();
-}
 
 // ── Subject CRUD ───────────────────────────────────────────────────
 function addSubject() {
