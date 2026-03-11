@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Score Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d4521a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Score Tracker">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/onboarding.css">
+    <link rel="stylesheet" href="css/enhancements.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SC94SRRF5S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SC94SRRF5S');
+</script>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-tag">Academic</div>
+                <div class="brand-name" id="brand-name">คะแนนของฉัน</div>
+                <div class="brand-term" id="brand-term-label">เทอม 1/2568</div>
+            </div>
+
+            <div class="sidebar-nav">
+                <div class="term-dropdown" id="term-dropdown-wrap">
+                  <button class="term-dropdown-btn" id="term-dropdown-btn" onclick="toggleTermDropdown()">
+                    <span id="term-dropdown-label">—</span>
+                    <span class="term-dropdown-arrow">▾</span>
+                  </button>
+                  <div class="term-dropdown-list" id="term-dropdown-list"></div>
+                </div>
+                <button class="nav-btn" id="btn-addterm" onclick="addTerm()">＋ เพิ่มเทอมใหม่</button>
+                <button class="nav-btn" id="btn-renameterm" onclick="renameTerm()">✏️ แก้ชื่อเทอมนี้</button>
+                <button class="nav-btn" id="btn-deleteterm" onclick="deleteTerm()" style="color:rgba(255,100,100,0.7);border-color:rgba(192,57,43,0.2);">🗑️ ลบเทอมนี้</button>
+                <button class="nav-btn" id="dash-btn" onclick="showDashboard()">📊 Dashboard</button>
+                <button class="nav-btn" id="history-btn" onclick="showHistory()">📈 ประวัติ GPA</button>
+            </div>
+
+            <div class="sidebar-section" id="sidebar-subjects-label">วิชาในเทอมนี้</div>
+            <div class="subject-list" id="subject-list"></div>
+
+            <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 8px; min-height: 180px;">
+                <button class="btn-new-subject" id="btn-newsubject" onclick="addSubject()">+ เพิ่มวิชาใหม่</button>
+
+                <div style="display:flex;gap:4px;">
+                    <button class="btn-outline" style="flex:1;font-size:10px;" id="btn-backup" onclick="exportJSON()">💾 Backup</button>
+                    <button class="btn-outline" style="flex:1;font-size:10px;" id="btn-import" onclick="document.getElementById('import-file').click()">📂 Import</button>
+                    <input type="file" id="import-file" style="display:none" onchange="importJSON(event)" accept=".json">
+                </div>
+
+                <div style="display:flex;gap:4px;">
+                    <button id="lang-th" onclick="switchLang('th')" style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;font-family:var(--body)">🇹🇭 ไทย</button>
+                    <button id="lang-en" onclick="switchLang('en')" style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;font-family:var(--body)">🌐 EN</button>
+                </div>
+
+                <div id="sync-ui" style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div id="sync-status" style="font-size:10px;color:var(--ink3);font-family:var(--mono)"></div>
+                        <button id="btn-signout" onclick="signOut()" style="padding:2px 8px;background:rgba(192, 57, 43, 0.1);border:1px solid rgba(192, 57, 43, 0.2);border-radius:6px;color:#ff6b6b;font-family:var(--body);font-size:10px;cursor:pointer;display:none;width:auto;margin-top:0">ออก</button>
+                    </div>
+                    <div id="sync-user" style="font-size:10px;color:rgba(255,255,255,0.4);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+                    <button id="btn-signin" onclick="signInGoogle()" style="width:100%;padding:6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:#4285f4;font-family:var(--body);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
+                        <svg width="12" height="12" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Sign in with Google
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div id="empty-state" style="display:none;">
+                <div class="empty-hero">
+                    <div class="empty-illustration">
+                        <div class="empty-circle c1"></div>
+                        <div class="empty-circle c2"></div>
+                        <div class="empty-circle c3"></div>
+                        <div class="empty-emoji">🎓</div>
+                    </div>
+                    <div class="empty-tag" id="empty-tag-label">เริ่มต้นใช้งาน</div>
+                    <h2 class="empty-title" id="empty-text">ยังไม่มีวิชาในเทอมนี้</h2>
+                    <p class="empty-desc" id="empty-desc">เพิ่มวิชาแรกเพื่อเริ่มติดตามคะแนน<br>และคำนวณเกรดอัตโนมัติ</p>
+                    <button class="empty-cta" onclick="addSubject()">
+                        <span>＋</span> เพิ่มวิชาแรก
+                    </button>
+                    <div class="empty-steps">
+                        <div class="empty-step">
+                            <div class="empty-step-num">1</div>
+                            <div class="empty-step-text">เพิ่มวิชา</div>
+                        </div>
+                        <div class="empty-step-line"></div>
+                        <div class="empty-step">
+                            <div class="empty-step-num">2</div>
+                            <div class="empty-step-text">กรอกคะแนน</div>
+                        </div>
+                        <div class="empty-step-line"></div>
+                        <div class="empty-step">
+                            <div class="empty-step-num">3</div>
+                            <div class="empty-step-text">ดู GPA</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="subject-view" style="display:none;">
+                <div class="topbar">
+                    <div class="subject-title-wrap">
+                        <div class="subject-title">
+                            <input type="text" id="subject-name-input" maxlength="40" oninput="renameSubject(this.value)">
+                            <div class="grade-pill" id="grade-pill">—</div>
+                        </div>
+                        <div class="score-detail" id="score-detail-line"></div>
+                    </div>
+                    <div class="topbar-actions">
+                        <button class="btn btn-outline" id="quick-mode-btn" onclick="toggleQuickMode()">📋 โหมดเทอมเก่า</button>
+                        <button class="btn btn-outline" onclick="openBoundaryModal()">⚙️ เกรด</button>
+                        <button class="btn btn-danger" onclick="deleteSubject()">ลบวิชา</button>
+                        <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card s1">
+                        <div class="stat-label" id="lbl-raw">คะแนนสะสม</div>
+                        <div class="stat-value" id="stat-raw">—</div>
+                        <div class="stat-sub" id="stat-raw-sub"></div>
+                    </div>
+                    <div class="stat-card s2">
+                        <div class="stat-label" id="lbl-weighted">คะแนนถ่วงน้ำหนัก</div>
+                        <div class="stat-value" id="stat-weighted">—</div>
+                        <div class="stat-sub" id="stat-weighted-sub"></div>
+                    </div>
+                    <div class="stat-card s3">
+                        <div class="stat-label" id="lbl-need">Final ที่ต้องได้ (C)</div>
+                        <div class="stat-value" id="stat-need">—</div>
+                        <div class="stat-sub" id="stat-need-sub"></div>
+                    </div>
+                    <div class="stat-card s4">
+                        <div class="stat-label" id="lbl-grade">เกรดตอนนี้</div>
+                        <div class="stat-value" id="stat-grade">—</div>
+                        <div class="stat-sub" id="stat-grade-sub"></div>
+                    </div>
+                </div>
+
+                <div class="section-box" id="boundary-section">
+                    <div class="section-label" id="lbl-boundary">Grade Boundary — คุณอยู่ตรงไหน</div>
+                    <div class="boundary-bar" id="boundary-bar">
+                        <div class="boundary-marker" id="boundary-marker"></div>
+                    </div>
+                    <div class="boundary-labels" id="boundary-labels"></div>
+                </div>
+
+                <div class="section-box">
+                    <div class="final-header">
+                        <div class="section-label" id="lbl-final" style="margin-bottom:0">ต้องสอบ Final ได้เท่าไหร่</div>
+                        <div style="display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px">
+                            <span>Final Weight:</span>
+                            <input type="number" id="final-weight-input" class="weight-input" oninput="calculate()">
+                            <span>%</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; margin-left:12px">
+                            <span>Credits:</span>
+                            <input type="number" id="credits-input" class="weight-input" oninput="updateCredits(this.value)">
+                        </div>
+                    </div>
+                    <div class="final-grid" id="final-grid"></div>
+                    <div id="final-summary" style="margin-top:12px; font-size:11px; color:var(--ink3); font-family:var(--mono); text-align:center"></div>
+                </div>
+
+                <div id="quick-mode-panel" class="section-box anim" style="display:none; text-align:center;">
+                    <div class="section-label">บันทึกเกรดโดยตรง (Quick Mode)</div>
+                    <div class="quick-grade-buttons" id="quick-grade-buttons" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap"></div>
+                </div>
+
+                <div id="categories-container" class="categories"></div>
+                
+                <button class="btn-add-category" onclick="addCategory()">+ เพิ่มหมวดคะแนน</button>
+
+                <div class="section-box" style="margin-top:20px">
+                    <div class="section-label" id="lbl-note">โน้ต / หมายเหตุ</div>
+                    <textarea class="note-area" id="subject-note" placeholder="จดอะไรก็ได้..." oninput="saveNote(this.value)"></textarea>
+                </div>
+
+                <div class="weight-warn" id="weight-warn"></div>
+            </div>
+
+            <div id="dashboard-view" style="display:none;"></div>
+
+            <div id="history-view" style="display:none;"></div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="boundary-modal">
+        <div class="modal">
+            <div class="modal-title" id="modal-title">⚙ กำหนด Grade Boundary</div>
+            <div class="modal-sub" id="modal-sub">กำหนดเกณฑ์คะแนนขั้นต่ำของแต่ละเกรดสำหรับวิชานี้</div>
+            <div class="modal-grid" id="boundary-form"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="btn-reset" onclick="resetBoundary()">รีเซ็ต</button>
+                <button class="btn btn-outline" id="btn-cancel" onclick="closeBoundaryModal()">ยกเลิก</button>
+                <button class="btn btn-primary" id="btn-save" onclick="saveBoundary()">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/mobile.js"></script>
+    <script src="js/crud.js"></script>
+    <script src="js/calculate.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/init.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async function() {
+          // Unregister ALL old service workers first, then register fresh
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(r => r.unregister()));
+          navigator.serviceWorker.register('./sw.js')
+            .then(function(reg) { console.log('SW registered:', reg.scope); })
+            .catch(function(err) { console.warn('SW failed:', err); });
+        });
+      }
+    </script>
+
+    <div id="bottom-nav">
+        <button id="bnav-btn-dash" onclick="showDashboard();closeAllSheets();setNavActive('dash')">
+            <span>📊</span><span id="bnav-dash-label">Dashboard</span>
+        </button>
+        <button id="bnav-btn-gpa" onclick="showHistory();closeAllSheets();setNavActive('gpa')">
+            <span>📈</span><span id="bnav-gpa-label">GPA</span>
+        </button>
+        <button id="bnav-btn-subjects" onclick="toggleSubjectSheet()">
+            <span>📚</span><span id="bnav-subjects-label">วิชา</span>
+        </button>
+        <button id="bnav-btn-settings" onclick="toggleSettingsSheet();setNavActive('settings')">
+            <span>⚙️</span><span id="bnav-settings-label">Settings</span>
+        </button>
+    </div>
+
+    <div id="subject-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sidebar-bg);border-radius:20px 20px 0 0;padding:16px;max-height:72vh;overflow-y:auto;">
+        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:99px;margin:0 auto 16px"></div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:12px" id="sheet-subjects-label">วิชาในเทอมนี้</div>
+        <div id="subject-sheet-list"></div>
+        <button onclick="addSubject();closeAllSheets()" id="sheet-add-label" style="width:100%;padding:12px;background:rgba(212,82,26,0.12);border:1px dashed rgba(212,82,26,0.4);border-radius:10px;color:var(--accent);font-family:var(--body);font-size:13px;cursor:pointer;margin-top:6px">＋ เพิ่มวิชาใหม่</button>
+    </div>
+
+    <div id="settings-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sidebar-bg);border-radius:20px 20px 0 0;padding:16px;max-height:72vh;overflow-y:auto;">
+        
+        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:99px;margin:0 auto 16px"></div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:14px">⚙ Settings</div>
+        
+        <div style="margin-bottom:10px">
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-family:var(--mono)" id="settings-term-label">เทอม</div>
+            <select id="settings-term-select" onchange="switchTerm(this.value);closeAllSheets()" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:white;font-family:var(--body);font-size:13px;padding:8px 12px;outline:none;cursor:pointer"></select>
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button onclick="addTerm();closeAllSheets()" id="settings-addterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">＋ เพิ่มเทอม</button>
+            <button onclick="renameTerm()" id="settings-renameterm-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">✏️ แก้ชื่อเทอม</button>
+            <button onclick="deleteTerm();closeAllSheets()" style="flex:1;padding:9px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:8px;color:#ff6b6b;font-family:var(--body);font-size:12px;cursor:pointer">🗑️ ลบเทอมนี้</button>
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button onclick="toggleTheme()" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">🌙 Dark / Light</button>
+            <button onclick="exportJSON();closeAllSheets()" id="settings-backup-label" style="flex:1;padding:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-family:var(--body);font-size:12px;cursor:pointer">💾 Backup</button>
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button id="slang-th" onclick="switchLang('th')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🇹🇭 ไทย</button>
+            <button id="slang-en" onclick="switchLang('en')" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:var(--body)">🌐 EN</button>
+        </div>
+
+        <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div class="sync-status-text" style="font-size:11px;color:var(--ink3);font-family:var(--mono)"></div>
+                <button class="btn-signout-action" onclick="signOut()" style="padding:4px 12px;background:rgba(192, 57, 43, 0.1);border:1px solid rgba(192, 57, 43, 0.2);border-radius:6px;color:#ff6b6b;font-family:var(--body);font-size:11px;cursor:pointer;display:none;width:auto;margin-top:0">ออกจากระบบ</button>
+            </div>
+            <div class="sync-user-text" style="font-size:11px;color:rgba(255,255,255,0.4);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+            <button class="btn-signin-action" onclick="signInGoogle(); closeAllSheets();" style="width:100%;padding:10px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:#4285f4;font-family:var(--body);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+                <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Sign in with Google
+            </button>
+        </div>
+    </div>
+    <div id="sheet-overlay" onclick="closeAllSheets()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:140"></div>
+
+<!-- FAB Add Button (mobile) -->
+<button class="fab-add" id="fab-add-btn" onclick="addSubject()" title="เพิ่มวิชาใหม่">＋</button>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+
+
+<!-- ── Onboarding Overlay ──────────────────────────────── -->
+<div id="onboarding-overlay">
+    <div class="ob-slides" id="ob-slides">
+
+        <!-- Slide 1: Welcome -->
+        <div class="ob-slide active" data-slide="0">
+            <div class="ob-bg ob-bg-1"></div>
+            <div class="ob-content">
+                <div class="ob-icon">🎓</div>
+                <div class="ob-tag">SCORE TRACKER</div>
+                <h1 class="ob-title">ติดตามคะแนน<br>ทุกวิชา ง่ายๆ</h1>
+                <p class="ob-desc">บันทึกคะแนน คำนวณเกรด และดู GPA สะสม<br>ทั้งหมดในที่เดียว ฟรี ไม่ต้องสมัคร</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Score Tracking -->
+        <div class="ob-slide" data-slide="1">
+            <div class="ob-bg ob-bg-2"></div>
+            <div class="ob-content">
+                <div class="ob-icon">📝</div>
+                <div class="ob-tag">FEATURE 1</div>
+                <h1 class="ob-title">กรอกคะแนน<br>แล้วเกรดคำนวณเอง</h1>
+                <p class="ob-desc">แบ่งหมวดคะแนน — HW, Quiz, Midterm, Final<br>ระบบถ่วงน้ำหนักให้อัตโนมัติ แล้วบอกว่าต้องทำ Final ได้เท่าไหร่</p>
+                <div class="ob-mockup">
+                    <div class="ob-mock-row">
+                        <span>Midterm</span><span class="ob-mock-score">72 / 100</span><span class="ob-mock-pct">72%</span>
+                    </div>
+                    <div class="ob-mock-row">
+                        <span>Quiz 1–3</span><span class="ob-mock-score">18 / 20</span><span class="ob-mock-pct">90%</span>
+                    </div>
+                    <div class="ob-mock-row ob-mock-highlight">
+                        <span>Final ที่ต้องได้</span><span class="ob-mock-score">—</span><span class="ob-mock-grade">B+</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Dashboard -->
+        <div class="ob-slide" data-slide="2">
+            <div class="ob-bg ob-bg-3"></div>
+            <div class="ob-content">
+                <div class="ob-icon">📊</div>
+                <div class="ob-tag">FEATURE 2</div>
+                <h1 class="ob-title">Dashboard<br>ภาพรวมทุกวิชา</h1>
+                <p class="ob-desc">เห็นทุกวิชาในเทอมพร้อมกัน GPA สะสม กราฟคะแนน และวิชาที่เสี่ยงสอบตก</p>
+                <div class="ob-stats-mock">
+                    <div class="ob-stat-mock">
+                        <div class="ob-stat-val">3.42</div>
+                        <div class="ob-stat-lbl">GPA เทอมนี้</div>
+                    </div>
+                    <div class="ob-stat-mock">
+                        <div class="ob-stat-val">8</div>
+                        <div class="ob-stat-lbl">วิชาทั้งหมด</div>
+                    </div>
+                    <div class="ob-stat-mock ob-stat-warn">
+                        <div class="ob-stat-val">2</div>
+                        <div class="ob-stat-lbl">วิชาเสี่ยง</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: GPA History + CTA -->
+        <div class="ob-slide" data-slide="3">
+            <div class="ob-bg ob-bg-4"></div>
+            <div class="ob-content">
+                <div class="ob-icon">📈</div>
+                <div class="ob-tag">FEATURE 3</div>
+                <h1 class="ob-title">ประวัติ GPA<br>ทุกเทอม</h1>
+                <p class="ob-desc">เพิ่มได้หลายเทอม ดูกราฟ GPA สะสม และ Export ข้อมูลออกได้ทุกเมื่อ</p>
+                <button class="ob-cta" onclick="showAuthStep()">เริ่มใช้งานเลย →</button>
+                <div class="ob-skip-final" onclick="finishOnboarding()">ข้ามและใช้แบบไม่ล็อกอิน</div>
+            </div>
+        </div>
+
+    </div>
+
+
+        <!-- Auth Step -->
+        <div id="ob-auth-step" style="display:none;position:absolute;inset:0;background:#0d0c0b;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center;">
+            <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 55% at 50% 30%, rgba(66,133,244,0.15) 0%, transparent 65%);pointer-events:none;"></div>
+            <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:18px;max-width:320px;width:100%;">
+                <div style="font-size:52px;line-height:1;">🔐</div>
+                <div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;">บัญชีของคุณ</div>
+                <h2 style="font-family:var(--body);font-size:26px;font-weight:700;color:#ede9e3;line-height:1.3;letter-spacing:-0.3px;">ซิงค์ข้อมูล<br>ทุกอุปกรณ์</h2>
+                <p style="font-family:var(--body);font-size:13px;color:rgba(237,233,227,0.45);line-height:1.65;">ล็อกอินด้วย Google เพื่อสำรองข้อมูลอัตโนมัติ<br>และเข้าถึงได้ทุกที่ ทุกเครื่อง</p>
+
+                <!-- Benefits -->
+                <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin:4px 0;">
+                    <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;">
+                        <span style="font-size:20px;">☁️</span>
+                        <div style="text-align:left;">
+                            <div style="font-family:var(--body);font-size:13px;color:#ede9e3;font-weight:600;">Backup อัตโนมัติ</div>
+                            <div style="font-family:var(--body);font-size:11px;color:rgba(237,233,227,0.4);margin-top:2px;">ข้อมูลไม่หายแม้ล้างเครื่อง</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;">
+                        <span style="font-size:20px;">📱</span>
+                        <div style="text-align:left;">
+                            <div style="font-family:var(--body);font-size:13px;color:#ede9e3;font-weight:600;">ใช้ได้หลายอุปกรณ์</div>
+                            <div style="font-family:var(--body);font-size:11px;color:rgba(237,233,227,0.4);margin-top:2px;">มือถือ แท็บเล็ต คอมพิวเตอร์</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Sign In -->
+                <button onclick="obSignInGoogle()" style="width:100%;padding:15px;background:white;border:none;border-radius:14px;font-family:var(--body);font-size:15px;font-weight:700;color:#1a1714;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    เข้าสู่ระบบด้วย Google
+                </button>
+
+                <!-- Skip -->
+                <button onclick="finishOnboarding()" style="width:100%;padding:13px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;font-family:var(--body);font-size:14px;color:rgba(237,233,227,0.5);cursor:pointer;transition:all 0.18s;">
+                    ใช้แบบไม่ล็อกอิน (เก็บข้อมูลในเครื่อง)
+                </button>
+
+                <div style="font-family:var(--mono);font-size:10px;color:rgba(237,233,227,0.2);line-height:1.6;">
+                    ล็อกอินทีหลังได้เสมอใน Settings
+                </div>
+            </div>
+        </div>
+
+    <!-- Bottom controls -->
+    <div class="ob-controls">
+        <button class="ob-skip" onclick="finishOnboarding()">ข้าม</button>
+        <div class="ob-dots" id="ob-dots">
+            <span class="ob-dot active"></span>
+            <span class="ob-dot"></span>
+            <span class="ob-dot"></span>
+            <span class="ob-dot"></span>
+        </div>
+        <button class="ob-next" id="ob-next-btn" onclick="obNext()">ถัดไป</button>
+    </div>
+</div>
+
+    <script src="js/onboarding.js"></script>
+    <script src="js/pwa.js"></script>
+
+<!-- ── PWA Install Banner ──────────────────────────────── -->
+<div id="pwa-banner" style="display:none;">
+    <div class="pwa-banner-inner">
+        <div class="pwa-banner-left">
+            <div class="pwa-banner-icon">📲</div>
+            <div class="pwa-banner-text">
+                <div class="pwa-banner-title">ติดตั้งแอปได้เลย</div>
+                <div class="pwa-banner-sub">เร็วขึ้น ใช้ได้ออฟไลน์ ไม่ต้องเปิด browser</div>
+            </div>
+        </div>
+        <div class="pwa-banner-actions">
+            <button class="pwa-btn-install" onclick="pwaTriggerInstall()">ติดตั้ง</button>
+            <button class="pwa-btn-dismiss" onclick="pwaDismiss()">✕</button>
+        </div>
+    </div>
+</div>
+
+<!-- iOS Install Hint (for Safari users) -->
+<div id="pwa-ios-hint" style="display:none;">
+    <div class="pwa-ios-inner">
+        <button class="pwa-btn-dismiss pwa-ios-close" onclick="pwaIosDismiss()">✕</button>
+        <div style="font-size:36px;margin-bottom:12px;">📲</div>
+        <div class="pwa-banner-title" style="color:#ede9e3;margin-bottom:8px;">ติดตั้งบน iPhone</div>
+        <div class="pwa-ios-steps">
+            <div class="pwa-ios-step">
+                <span class="pwa-ios-num">1</span>
+                <span>กดปุ่ม <strong>Share</strong> <span style="font-size:16px;">⬆️</span> ที่แถบด้านล่าง</span>
+            </div>
+            <div class="pwa-ios-step">
+                <span class="pwa-ios-num">2</span>
+                <span>เลือก <strong>"Add to Home Screen"</strong></span>
+            </div>
+            <div class="pwa-ios-step">
+                <span class="pwa-ios-num">3</span>
+                <span>กด <strong>"Add"</strong> มุมขวาบน</span>
+            </div>
+        </div>
+        <div class="pwa-ios-arrow">▼</div>
+    </div>
+</div>
+
+
+<!-- ── Share GPA Modal ────────────────────────────────── -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#1a1714;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;width:100%;max-width:520px;box-shadow:0 24px 80px rgba(0,0,0,0.5);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div>
+                <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:3px;">SHARE</div>
+                <div style="font-family:var(--body);font-size:16px;font-weight:700;color:#ede9e3;">GPA Card ของฉัน</div>
+            </div>
+            <button onclick="closeShareModal()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(237,233,227,0.5);width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+
+        <!-- Canvas preview -->
+        <div style="border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+            <canvas id="share-canvas" style="width:100%;display:block;"></canvas>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;">
+            <button onclick="shareCard()" style="flex:1;padding:13px;background:var(--accent);border:none;border-radius:12px;color:white;font-family:var(--body);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.18s;box-shadow:0 4px 16px rgba(212,82,26,0.3);">
+                <span style="font-size:18px;">📤</span> แชร์
+            </button>
+            <button onclick="downloadShareCard()" style="flex:1;padding:13px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(237,233,227,0.8);font-family:var(--body);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.18s;">
+                <span style="font-size:18px;">💾</span> บันทึกรูป
+            </button>
+        </div>
+    </div>
+</div>
+
+    <script src="js/share.js"></script>
+
+<!-- ── Grade Goal Modal ───────────────────────────────── -->
+<div id="goal-modal" style="display:none;">
+    <div class="goal-modal-box">
+        <div class="goal-modal-header">
+            <div>
+                <div class="goal-modal-tag">GRADE GOAL</div>
+                <div class="goal-modal-title">🎯 ตั้งเป้าเกรด</div>
+            </div>
+            <button class="goal-modal-close" onclick="closeGoalModal()">✕</button>
+        </div>
+        <div id="goal-modal-body"></div>
+    </div>
+</div>
+
+    <script src="js/grade-goal.js"></script>
+
+<!-- ── Deadline Modal ─────────────────────────────────── -->
+<div id="deadline-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;">
+  <div class="deadline-modal-box">
+    <div class="deadline-modal-title">📅 เพิ่มกำหนดสอบ / ส่งงาน</div>
+    <div class="deadline-modal-field">
+      <div class="deadline-modal-label">ประเภท</div>
+      <select id="deadline-type-select" class="deadline-modal-select">
+        <option>สอบ</option>
+        <option>ส่งงาน</option>
+        <option>นำเสนอ</option>
+        <option>โปรเจกต์</option>
+        <option>อื่นๆ</option>
+      </select>
+    </div>
+    <div class="deadline-modal-field">
+      <div class="deadline-modal-label">ชื่อวิชา / งาน</div>
+      <input id="deadline-name-input" class="deadline-modal-input" type="text" placeholder="เช่น Calculus Final, รายงาน CS..." maxlength="50">
+    </div>
+    <div class="deadline-modal-field">
+      <div class="deadline-modal-label">วันที่</div>
+      <input id="deadline-date-input" class="deadline-modal-input" type="date">
+    </div>
+    <div class="deadline-modal-actions">
+      <button class="btn btn-outline" onclick="closeDeadlineModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveDeadlineFromModal()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+    <script src="js/enhancements.js"></script>
+    <script src="js/analytics.js"></script>
+</body>
+</html>

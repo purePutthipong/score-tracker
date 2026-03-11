@@ -1,0 +1,35 @@
+{
+  "name": "Score Tracker",
+  "short_name": "คะแนน",
+  "description": "ติดตามคะแนนและ GPA ของคุณ",
+  "start_url": "/score-tracker/",
+  "scope": "/score-tracker/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#d4521a",
+  "orientation": "portrait-primary",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["education", "productivity"]
+}

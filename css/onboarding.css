@@ -1,0 +1,339 @@
+/* Onboarding Slideshow — Score Tracker */
+
+/* ══════════════════════════════════════════════════════════
+   ONBOARDING OVERLAY
+   ══════════════════════════════════════════════════════════ */
+
+#onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #0d0c0b;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Hidden by default if already seen */
+}
+
+#onboarding-overlay.ob-hidden {
+  display: none;
+}
+
+/* ── Slides container ── */
+.ob-slides {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.ob-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px 20px;
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.45s cubic-bezier(.4,0,.2,1), transform 0.45s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+  text-align: center;
+}
+
+.ob-slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.ob-slide.ob-exit {
+  opacity: 0;
+  transform: translateX(-60px);
+}
+
+/* ── Animated backgrounds ── */
+.ob-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ob-bg-1 {
+  background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(212,82,26,0.22) 0%, transparent 70%),
+              radial-gradient(ellipse 50% 40% at 80% 80%, rgba(37,99,196,0.1) 0%, transparent 60%);
+}
+.ob-bg-2 {
+  background: radial-gradient(ellipse 70% 50% at 30% 30%, rgba(37,99,196,0.2) 0%, transparent 65%),
+              radial-gradient(ellipse 60% 40% at 70% 70%, rgba(212,82,26,0.12) 0%, transparent 60%);
+}
+.ob-bg-3 {
+  background: radial-gradient(ellipse 80% 55% at 60% 25%, rgba(26,122,74,0.18) 0%, transparent 65%),
+              radial-gradient(ellipse 50% 40% at 20% 75%, rgba(212,82,26,0.1) 0%, transparent 60%);
+}
+.ob-bg-4 {
+  background: radial-gradient(ellipse 75% 55% at 40% 30%, rgba(184,134,11,0.18) 0%, transparent 65%),
+              radial-gradient(ellipse 50% 40% at 75% 70%, rgba(212,82,26,0.15) 0%, transparent 60%);
+}
+
+/* ── Slide content ── */
+.ob-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 360px;
+  width: 100%;
+}
+
+.ob-icon {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+  animation: obIconFloat 3s ease-in-out infinite;
+}
+
+@keyframes obIconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.ob-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.ob-title {
+  font-family: var(--body);
+  font-size: 30px;
+  font-weight: 700;
+  color: #ede9e3;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+}
+
+.ob-desc {
+  font-family: var(--body);
+  font-size: 14px;
+  color: rgba(237,233,227,0.5);
+  line-height: 1.65;
+  max-width: 300px;
+}
+
+/* ── Mockup card (slide 2) ── */
+.ob-mockup {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 14px 18px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.ob-mock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--body);
+  font-size: 12px;
+  color: rgba(237,233,227,0.6);
+}
+
+.ob-mock-score {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: rgba(237,233,227,0.8);
+}
+
+.ob-mock-pct {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgba(237,233,227,0.4);
+  width: 36px;
+  text-align: right;
+}
+
+.ob-mock-highlight {
+  background: rgba(212,82,26,0.12);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 0 -10px;
+  color: rgba(237,233,227,0.9) !important;
+}
+
+.ob-mock-grade {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  width: 36px;
+  text-align: right;
+}
+
+/* ── Stats mockup (slide 3) ── */
+.ob-stats-mock {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.ob-stat-mock {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  padding: 14px 10px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.ob-stat-mock.ob-stat-warn {
+  background: rgba(192,57,43,0.1);
+  border-color: rgba(192,57,43,0.2);
+}
+
+.ob-stat-val {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: #ede9e3;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.ob-stat-warn .ob-stat-val { color: #ff6b6b; }
+
+.ob-stat-lbl {
+  font-family: var(--body);
+  font-size: 10px;
+  color: rgba(237,233,227,0.4);
+}
+
+/* ── CTA button (slide 4) ── */
+.ob-cta {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 40px;
+  font-family: var(--body);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 8px 30px rgba(212,82,26,0.35);
+  margin-top: 8px;
+  width: 100%;
+  max-width: 280px;
+  letter-spacing: 0.3px;
+}
+
+.ob-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(212,82,26,0.45); }
+.ob-cta:active { transform: scale(0.97); }
+
+.ob-skip-final {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(237,233,227,0.25);
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+/* ── Bottom controls ── */
+.ob-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: rgba(13,12,11,0.6);
+  backdrop-filter: blur(10px);
+}
+
+.ob-skip {
+  background: none;
+  border: none;
+  color: rgba(237,233,227,0.3);
+  font-family: var(--body);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 4px;
+  transition: color 0.15s;
+  min-width: 48px;
+}
+
+.ob-skip:hover { color: rgba(237,233,227,0.6); }
+
+/* Dots */
+.ob-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ob-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(237,233,227,0.2);
+  transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  cursor: pointer;
+}
+
+.ob-dot.active {
+  background: var(--accent);
+  width: 22px;
+}
+
+/* Next button */
+.ob-next {
+  background: rgba(212,82,26,0.15);
+  border: 1px solid rgba(212,82,26,0.3);
+  color: var(--accent);
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 18px;
+  border-radius: 10px;
+  transition: all 0.18s;
+  min-width: 72px;
+}
+
+.ob-next:hover { background: rgba(212,82,26,0.25); }
+.ob-next:active { transform: scale(0.96); }
+
+/* Last slide — hide next button */
+.ob-next.ob-last {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Swipe hint */
+@media (max-width: 768px) {
+  .ob-title { font-size: 26px; }
+  .ob-icon { font-size: 48px; }
+  .ob-desc { font-size: 13px; }
+}
+
+/* Auth step */
+#ob-auth-step {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+#ob-auth-step button:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}

@@ -1,0 +1,191 @@
+/* Empty State — Score Tracker */
+
+.empty-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 32px 40px;
+  min-height: 70vh;
+  gap: 14px;
+  animation: slideIn 0.4s ease both;
+}
+
+/* ── Illustration ─────────────────────────────────────── */
+.empty-illustration {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.empty-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.15;
+  animation: emptyPulse 3s ease-in-out infinite;
+}
+
+.empty-circle.c1 {
+  inset: 0;
+  background: var(--accent);
+  animation-delay: 0s;
+}
+
+.empty-circle.c2 {
+  inset: 14px;
+  background: var(--accent2);
+  animation-delay: 0.4s;
+}
+
+.empty-circle.c3 {
+  inset: 28px;
+  background: var(--accent);
+  animation-delay: 0.8s;
+}
+
+@keyframes emptyPulse {
+  0%, 100% { transform: scale(1); opacity: 0.15; }
+  50%       { transform: scale(1.08); opacity: 0.25; }
+}
+
+.empty-emoji {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  line-height: 1;
+  animation: emptyFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.15));
+}
+
+@keyframes emptyFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* ── Text ─────────────────────────────────────────────── */
+.empty-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: var(--accent);
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.empty-title {
+  font-family: var(--body);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.empty-desc {
+  font-family: var(--body);
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.7;
+  max-width: 260px;
+}
+
+/* ── CTA Button ───────────────────────────────────────── */
+.empty-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 28px;
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 6px 24px rgba(212,82,26,0.3);
+  margin-top: 4px;
+}
+
+.empty-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(212,82,26,0.4);
+}
+
+.empty-cta:active { transform: scale(0.97); }
+
+.empty-cta span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* ── Step Indicator ───────────────────────────────────── */
+.empty-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 8px;
+}
+
+.empty-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.empty-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink3);
+}
+
+.empty-step-text {
+  font-family: var(--body);
+  font-size: 11px;
+  color: var(--ink3);
+  white-space: nowrap;
+}
+
+.empty-step-line {
+  width: 40px;
+  height: 1.5px;
+  background: var(--border);
+  margin-bottom: 22px;
+  flex-shrink: 0;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .empty-step-num {
+  background: var(--card);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .empty-hero {
+    padding: 40px 24px 32px;
+    min-height: 60vh;
+  }
+
+  .empty-title { font-size: 20px; }
+  .empty-illustration { width: 100px; height: 100px; }
+  .empty-emoji { font-size: 38px; }
+  .empty-step-line { width: 28px; }
+}
