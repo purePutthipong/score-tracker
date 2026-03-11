@@ -12,11 +12,14 @@ if (savedTheme) {
 
 applyLang();
 renderAll();
-if (getSubjects().length > 0) {
-  showDashboard();
-} else {
-  document.getElementById('empty-state').style.display = 'block';
-}
+// หน่วงเล็กน้อยเพื่อให้ enhancements.js override renderDashboard() ก่อน
+setTimeout(() => {
+  if (getSubjects().length > 0) {
+    showDashboard();
+  } else {
+    document.getElementById('empty-state').style.display = 'block';
+  }
+}, 0);
 
 // ── ตรวจสอบว่าเทอมปัจจุบันเคยเลือก gradeMode แล้วหรือยัง ──────────
 (function checkGradeModeSetup() {
