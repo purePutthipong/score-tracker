@@ -379,12 +379,18 @@ window.renderDashboard = function() {
 
     ${renderDeadlinePanel()}
 
+    <!-- Chart อยู่บน (มือถือ) -->
+    <div class="charts-grid">
+      <div class="chart-box"><div class="section-label">คะแนนแต่ละวิชา</div><canvas id="scoreChart"></canvas></div>
+      <div class="chart-box"><div class="section-label">การกระจายเกรด</div><canvas id="gradeChart"></canvas></div>
+    </div>
+
     <!-- จอใหญ่: Card Grid -->
     <div class="dash-subjects-desktop">
       ${renderSubjectCards(rows)}
     </div>
 
-    <!-- มือถือ: ตารางกระชับ -->
+    <!-- มือถือ: ตารางกระชับ อยู่ล่าง chart -->
     <div class="dash-subjects-mobile">
       <div class="section-label" style="margin-bottom:10px;">รายวิชา</div>
       ${rows.map(r => {
@@ -400,11 +406,6 @@ window.renderDashboard = function() {
           </div>
         </div>`;
       }).join('')}
-    </div>
-
-    <div class="charts-grid">
-      <div class="chart-box"><div class="section-label">คะแนนแต่ละวิชา</div><canvas id="scoreChart"></canvas></div>
-      <div class="chart-box"><div class="section-label">การกระจายเกรด</div><canvas id="gradeChart"></canvas></div>
     </div>
 
     <div style="text-align:right;margin-top:8px">
