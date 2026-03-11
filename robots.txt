@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://pureputthipong.github.io/score-tracker/sitemap.xml

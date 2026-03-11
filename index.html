@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Score Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <title>Score Tracker - คำนวณเกรด พยากรณ์คะแนน Final สำหรับนักศึกษา</title>
+    <meta name="description" content="เครื่องมือช่วยคำนวณเกรดเฉลี่ย (GPA) ติดตามคะแนนเก็บ และคำนวณคะแนนที่ต้องได้ในสอบ Final เพื่อให้ได้เกรดที่ตั้งเป้าหมายไว้">
+    <meta name="keywords" content="คำนวณเกรด, คำนวณคะแนนสอบ, พยากรณ์เกรด, เครื่องมือการศึกษา, Score Tracker">
+
+    <meta property="og:title" content="Score Tracker - คำนวณเกรด พยากรณ์คะแนน Final">
+    <meta property="og:description" content="กรอกคะแนนเก็บเพื่อพยากรณ์เกรด และดูว่า Final ต้องได้เท่าไหร่">
+    <meta property="og:image" content="https://pureputthipong.github.io/score-tracker/icons/icon-512.png">
+    <meta property="og:url" content="https://pureputthipong.github.io/score-tracker/">
+    <meta property="og:type" content="website">
+
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d4521a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,16 +21,20 @@
     <meta name="apple-mobile-web-app-title" content="Score Tracker">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <meta name="mobile-web-app-capable" content="yes">
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/onboarding.css">
     <link rel="stylesheet" href="css/enhancements.css">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SC94SRRF5S"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-SC94SRRF5S');
-</script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SC94SRRF5S"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SC94SRRF5S');
+    </script>
 </head>
 <body>
     <div class="app">
@@ -90,7 +102,7 @@
                     </div>
                     <div class="empty-tag" id="empty-tag-label">เริ่มต้นใช้งาน</div>
                     <h2 class="empty-title" id="empty-text">ยังไม่มีวิชาในเทอมนี้</h2>
-                    <p class="empty-desc" id="empty-desc">เพิ่มวิชาแรกเพื่อเริ่มติดตามคะแนน<br>และคำนวณเกรดอัตโนมัติ</p>
+                    <p class="empty-desc" id="empty-desc">เพิ่มวิชาแรกเพื่อเริ่มติดตามคะแนน<br>และaคำนวณเกรดอัตโนมัติ</p>
                     <button class="empty-cta" onclick="addSubject()">
                         <span>＋</span> เพิ่มวิชาแรก
                     </button>
