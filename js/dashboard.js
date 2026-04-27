@@ -1,4 +1,4 @@
-// ── Dashboard ──────────────────────────────────────────────────────
+﻿// ── Dashboard ──────────────────────────────────────────────────────
 function showDashboard() {
   currentSubjectId = null;
   document.getElementById('empty-state').style.display = 'none';
@@ -17,16 +17,16 @@ function showDashboard() {
 let chartInstances = {};
 function changePassThreshold() {
   const options = [
-    { gp: 1.0, label: 'D (1.0) — ผ่านขั้นต่ำ' },
-    { gp: 1.5, label: 'D+ (1.5)' },
-    { gp: 2.0, label: 'C (2.0)' },
-    { gp: 2.5, label: 'C+ (2.5)' },
-    { gp: 3.0, label: 'B (3.0) — เกียรตินิยมอันดับ 2' },
-    { gp: 3.5, label: 'B+ (3.5) — เกียรตินิยมอันดับ 1' },
+    { gp: 1.0, label: tr('thresholdD') },
+    { gp: 1.5, label: tr('thresholdDp') },
+    { gp: 2.0, label: tr('thresholdC') },
+    { gp: 2.5, label: tr('thresholdCp') },
+    { gp: 3.0, label: tr('thresholdB') },
+    { gp: 3.5, label: tr('thresholdBp') },
   ];
   const current = parseFloat(localStorage.getItem('scoretracker_pass_threshold') || '1.0');
   const labels = options.map((o,i) => `${i+1}. ${o.label}${o.gp===current?' ✓':''}`).join('\n');
-  const choice = prompt(`เลือกเกณฑ์ "วิชาที่ผ่าน":\n\n${labels}\n\nพิมพ์หมายเลข 1-${options.length}`);
+  const choice = prompt(trf('passThresholdPrompt', {labels: labels, n: options.length}));
   const idx = parseInt(choice) - 1;
   if (isNaN(idx) || idx < 0 || idx >= options.length) return;
   localStorage.setItem('scoretracker_pass_threshold', options[idx].gp);
@@ -50,9 +50,9 @@ function renderDashboard() {
         </div>
         <div class="empty-tag">${tr('dashboard')}</div>
         <h2 class="empty-title">${tr('addEmptyDash')}</h2>
-        <p class="empty-desc">เพิ่มวิชาและกรอกคะแนน<br>แล้ว Dashboard จะแสดงสถิติทั้งหมดให้</p>
+        <p class="empty-desc">${tr('dashEmptyDesc')}</p>
         <button class="empty-cta" onclick="addSubject()">
-          <span>＋</span> เพิ่มวิชาแรก
+          ${tr('dashAddFirst')}
         </button>
       </div>`;
     return;
@@ -84,13 +84,13 @@ function renderDashboard() {
   const gpaColor = avgGPA===null?'rgba(255,255,255,0.5)':avgGPA>=3.0?'#4af7a0':avgGPA>=2.0?'#f7c94a':'#f76a6a';
 
   const alertsHtml = atRisk.map(r =>
-    `<div class="dash-alert">⚠ <strong>${r.s.name}</strong> — คะแนนปัจจุบัน ${r.score!==null?r.score.toFixed(1):'—'} (เกรด ${r.grade.letter}) อาจไม่ผ่าน</div>`
+    `<div class="dash-alert">${trf('atRiskMsg', {name: r.s.name, score: r.score!==null?r.score.toFixed(1):'—', grade: r.grade.letter})}</div>`
   ).join('');
 
  const tableRows = rows.map(r => {
     const gc = r.grade ? getGradeColor(r.grade.letter) : 'var(--ink3)';
     const pct = r.score!==null ? Math.min(r.score,100) : 0;
-    const needText = r.needC===null?'—':r.needC<=0?'ผ่านแล้ว ✓':r.needC>100?'ไม่ผ่านแล้ว':r.needC.toFixed(1);
+    const needText = r.needC===null?'—':r.needC<=0?tr('passedCheck'):r.needC>100?tr('failingNow'):r.needC.toFixed(1);
     const needColor = r.needC===null?'var(--ink3)':r.needC<=0?'var(--green)':r.needC>100?'var(--red)':r.needC>80?'var(--red)':'var(--ink2)';
     
     return `<div class="dash-row" onclick="selectSubject(${r.s.id})">
@@ -119,35 +119,35 @@ function renderDashboard() {
         </div>
         <div style="display:flex;gap:8px;">
           <button onclick="openGoalModal()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);border-radius:10px;color:rgba(237,233,227,0.7);font-family:var(--body);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.18s;white-space:nowrap;">
-            <span>🎯</span> ตั้งเป้า
+            <span>🎯</span> ${tr('dashSetGoal')}
           </button>
           <button onclick="openShareModal()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);border-radius:10px;color:rgba(237,233,227,0.7);font-family:var(--body);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.18s;white-space:nowrap;">
-            <span>📤</span> แชร์
+            <span>📤</span> ${tr('dashShare')}
           </button>
         </div>
       </div>
     </div>
     ${alertsHtml}
     <div class="dash-stats">
-      <div class="dash-stat" onclick="changePassThreshold()" title="คลิกเพื่อเปลี่ยนเกณฑ์" style="cursor:pointer">
-        <div class="dash-stat-label">วิชาที่ผ่าน</div>
+      <div class="dash-stat" onclick="changePassThreshold()" title=tr('dashPassClick') style="cursor:pointer">
+        <div class="dash-stat-label"></div>
         <div class="dash-stat-value" style="color:var(--green)">${passCount}<span style="font-size:15px;color:var(--ink3)"> / ${subjects.length}</span></div>
         <div class="dash-stat-sub">เกรด ${passThresholdLabel} ขึ้นไป <span style="color:var(--accent);font-size:10px">✎</span></div>
       </div>
-      <div class="dash-stat"><div class="dash-stat-label">วิชาที่เสี่ยง</div><div class="dash-stat-value" style="color:${atRisk.length?'var(--red)':'var(--green)'}">${atRisk.length}</div><div class="dash-stat-sub">ต่ำกว่าเกรด ${passThresholdLabel}</div></div>
-      <div class="dash-stat"><div class="dash-stat-label">ต้องสู้ Final</div><div class="dash-stat-value" style="color:var(--accent)">${needFinal.length}</div><div class="dash-stat-sub">วิชาที่ยังต้องทำ final</div></div>
-      <div class="dash-stat"><div class="dash-stat-label">หน่วยกิตรวม</div><div class="dash-stat-value" style="color:var(--accent2)">${totalCredits}</div><div class="dash-stat-sub">credit ที่มีเกรดแล้ว</div></div>
+      <div class="dash-stat"><div class="dash-stat-label"></div><div class="dash-stat-value" style="color:${atRisk.length?'var(--red)':'var(--green)'}">${atRisk.length}</div><div class="dash-stat-sub">ต่ำกว่าเกรด ${passThresholdLabel}</div></div>
+      <div class="dash-stat"><div class="dash-stat-label"></div><div class="dash-stat-value" style="color:var(--accent)">${needFinal.length}</div><div class="dash-stat-sub"></div></div>
+      <div class="dash-stat"><div class="dash-stat-label"></div><div class="dash-stat-value" style="color:var(--accent2)">${totalCredits}</div><div class="dash-stat-sub"></div></div>
     </div>
     <div class="charts-grid">
-      <div class="chart-box"><div class="section-label">คะแนนแต่ละวิชา</div><canvas id="scoreChart"></canvas></div>
-      <div class="chart-box"><div class="section-label">การกระจายเกรด</div><canvas id="gradeChart"></canvas></div>
+      <div class="chart-box"><div class="section-label"></div><canvas id="scoreChart"></canvas></div>
+      <div class="chart-box"><div class="section-label"></div><canvas id="gradeChart"></canvas></div>
     </div>
     <div class="dash-table-wrap">
-      <div class="dash-table-header"><div>วิชา</div><div style="text-align:center">คะแนนสะสม</div><div>ความคืบหน้า</div><div style="text-align:center">เกรด</div><div style="text-align:center">เกรดพอยต์</div><div style="text-align:center">Final ที่ต้องได้</div></div>
+      <div class="dash-table-header"><div></div><div style="text-align:center">คะแนนสะสม</div><div>ความคืบหน้า</div><div style="text-align:center">เกรด</div><div style="text-align:center">เกรดพอยต์</div><div style="text-align:center">Final ที่ต้องได้</div></div>
       ${tableRows}
     </div>
     <div style="text-align:right;margin-top:8px">
-      <button class="btn btn-outline" onclick="exportAllCSV()" style="font-size:12px">⬇ Export CSV ทั้งหมด</button>
+      <button class="btn btn-outline" onclick="exportAllCSV()" style="font-size:12px"></button>
     </div>`;
 
   // Charts
@@ -163,7 +163,7 @@ function renderDashboard() {
       data:{
         labels: rows.map(r=>r.s.name.substring(0,12)),
         datasets:[{
-          label:'คะแนนสะสม',
+          label:tr('tableColScore'),
           data: rows.map(r=>r.score!==null?parseFloat(r.score.toFixed(1)):0),
           backgroundColor: rows.map(r=>r.grade?getGradeColor(r.grade.letter)+'99':'#b0a89e66'),
           borderColor: rows.map(r=>r.grade?getGradeColor(r.grade.letter):'#b0a89e'),
@@ -244,15 +244,15 @@ function renderHistory() {
       </div>
     </div>
     <div class="chart-box" style="margin-bottom:18px">
-      <div class="section-label">GPA แต่ละเทอม</div>
+      <div class="section-label"></div>
       <canvas id="termChart" style="max-height:220px"></canvas>
     </div>
     <div class="dash-table-wrap">
       <div style="padding:12px 18px;background:var(--card);border-bottom:1px solid var(--border)">
-        <span style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3)">ประวัติแต่ละเทอม</span>
+        <span style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3)"></span>
       </div>
       <table class="term-history-table" style="width:100%">
-        <thead><tr><th>เทอม</th><th>วิชาทั้งหมด</th><th>วิชาที่ผ่าน</th><th>GPA</th></tr></thead>
+        <thead><tr><th></th><th></th><th></th><th>GPA</th></tr></thead>
         <tbody>${tableRows}</tbody>
       </table>
     </div>`;
@@ -278,3 +278,4 @@ function renderHistory() {
   }
   }, 50);
 }
+

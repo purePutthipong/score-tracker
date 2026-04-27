@@ -14,27 +14,27 @@ function showAddTermModal() {
   modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;';
   modal.innerHTML = `
     <div style="background:#1a1714;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,0.5);">
-      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px;">เพิ่มเทอมใหม่</div>
-      <div style="font-family:var(--body);font-size:18px;font-weight:700;color:#ede9e3;margin-bottom:20px;">ตั้งค่าเทอม</div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px;">${tr('newTermTitle')}</div>
+      <div style="font-family:var(--body);font-size:18px;font-weight:700;color:#ede9e3;margin-bottom:20px;">${tr('newTermSettings')}</div>
 
       <div style="margin-bottom:16px;">
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:var(--mono);margin-bottom:8px;">ชื่อเทอม</div>
-        <input id="add-term-name" type="text" value="เทอม ${termNum}"
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:var(--mono);margin-bottom:8px;">${tr('newTermNameLabel')}</div>
+        <input id="add-term-name" type="text" value="${tr('termDefault')} ${termNum}"
           style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#ede9e3;font-family:var(--body);font-size:14px;padding:10px 14px;outline:none;">
       </div>
 
       <div style="margin-bottom:24px;">
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:var(--mono);margin-bottom:10px;">ระบบเกรด</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:var(--mono);margin-bottom:10px;">${tr('newTermGradeSystem')}</div>
         <div style="display:flex;gap:10px;">
           <button id="mode-uni" onclick="selectTermMode('uni')"
             style="flex:1;padding:14px 10px;border-radius:12px;border:2px solid var(--accent);background:rgba(212,82,26,0.15);color:#ede9e3;font-family:var(--body);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.18s;text-align:center;">
-            🎓<br><span style="font-size:12px;font-weight:700;">มหาวิทยาลัย</span><br>
-            <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:400;">A, B+, B, C+...</span>
+            🎓<br><span style="font-size:12px;font-weight:700;">${tr('newTermUni')}</span><br>
+            <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:400;">${tr('newTermUniSub')}</span>
           </button>
           <button id="mode-k12" onclick="selectTermMode('k12')"
             style="flex:1;padding:14px 10px;border-radius:12px;border:2px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(237,233,227,0.5);font-family:var(--body);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.18s;text-align:center;">
-            🏫<br><span style="font-size:12px;font-weight:700;">ประถม/มัธยม</span><br>
-            <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:400;">4, 3.5, 3, 2.5...</span>
+            🏫<br><span style="font-size:12px;font-weight:700;">${tr('newTermK12')}</span><br>
+            <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:400;">${tr('newTermK12Sub')}</span>
           </button>
         </div>
       </div>
@@ -42,11 +42,11 @@ function showAddTermModal() {
       <div style="display:flex;gap:10px;">
         <button onclick="document.getElementById('add-term-modal').remove()"
           style="flex:1;padding:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(237,233,227,0.6);font-family:var(--body);font-size:14px;cursor:pointer;">
-          ยกเลิก
+          ${tr('newTermCancel')}
         </button>
         <button onclick="confirmAddTerm()"
           style="flex:2;padding:12px;background:var(--accent);border:none;border-radius:12px;color:white;font-family:var(--body);font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(212,82,26,0.3);">
-          สร้างเทอม →
+          ${tr('newTermCreate')}
         </button>
       </div>
     </div>
@@ -84,7 +84,7 @@ window.confirmAddTerm = function() {
   const trimmed = nameEl.value.trim();
   if (!trimmed) { nameEl.focus(); return; }
   if (data.terms.some(t => t.name.trim() === trimmed)) {
-    alert(`"${trimmed}" มีอยู่แล้วค่ะ`); return;
+    alert(trf('alertDuplicate', {name: trimmed})); return;
   }
   const id = nextId();
   const gradeMode = window._addTermMode || 'uni';
@@ -101,7 +101,7 @@ function renameTerm() {
   const trimmed = name.trim();
   if (!trimmed || trimmed === t.name) return;
   if (data.terms.some(x => x.id !== t.id && x.name.trim() === trimmed)) {
-    alert(`"${trimmed}" มีอยู่แล้วค่ะ`);
+    alert(trf('alertDuplicate', {name: trimmed}));
     return;
   }
   t.name = trimmed; save(); renderAll();
@@ -114,7 +114,7 @@ function renameTerm() {
 function deleteTerm() {
   const t = currentTerm();
   if (!t) return;
-  const confirmed = confirm(`ลบเทอม "${t.name}"${t.subjects.length > 0 ? ' และวิชาทั้งหมด ' + t.subjects.length + ' วิชา' : ''}?\nไม่สามารถย้อนกลับได้`);
+  const confirmed = confirm(trf('confirmDeleteTerm', {name: t.name, subs: t.subjects.length > 0 ? trf('confirmDeleteTermSubs', {n: t.subjects.length}) : ''}));
   if (!confirmed) return;
   const idx = data.terms.findIndex(x => x.id === t.id);
   data.terms.splice(idx, 1);
@@ -122,7 +122,7 @@ function deleteTerm() {
   // If no terms left, create a fresh one automatically
   if (data.terms.length === 0) {
     const newId = nextId();
-    data.terms.push({ id: newId, name: 'เทอม 1', subjects: [] });
+    data.terms.push({ id: newId, name: tr('termDefault') + ' 1', subjects: [] });
     save();
     switchTerm(newId);
   } else {
@@ -138,7 +138,7 @@ function addSubject() {
   const id = nextId();
   const isK12 = t.gradeMode === 'k12';
   t.subjects.push({
-    id, name:`วิชาใหม่ ${t.subjects.length+1}`,
+    id, name:tr('newSubjectName') + ' ' + (t.subjects.length+1),
     credits: isK12 ? 1 : 3,
     finalWeight: 30, categories: [], note: '',
     boundary: isK12 ? {...K12_DEFAULT_BOUNDARY} : {...DEFAULT_BOUNDARY},
@@ -149,13 +149,13 @@ function addSubject() {
   selectSubject(id);
   // สร้างหมวดคะแนนให้ทั้ง uni และ k12
   if (isK12) {
-    addCategory('งาน / ชิ้นงาน', 30);
-    addCategory('สอบกลางภาค', 30);
-    addCategory('เก็บคะแนน', 10);
+    addCategory(tr('catDefaultHW'), 30);
+    addCategory(tr('catDefaultMid'), 30);
+    addCategory(tr('catDefaultQuiz'), 10);
   } else {
-    addCategory('การบ้าน / งาน', 20);
-    addCategory('สอบกลางภาค', 30);
-    addCategory('เก็บคะแนน', 20);
+    addCategory(tr('catDefaultHW'), 20);
+    addCategory(tr('catDefaultMid'), 30);
+    addCategory(tr('catDefaultQuiz'), 20);
   }
 }
 
